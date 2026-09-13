@@ -1,3 +1,4 @@
+%%writefile app.py
 
 import streamlit as st
 import pandas as pd
@@ -145,7 +146,8 @@ with st.sidebar:
             "🏠 Dashboard",
             "🔮 Sales Prediction",
             "💡 Business Insights",
-            "🤖 About Model"
+            "🤖 About Model",
+            "📊 Power BI Dashboard"
         ],
         label_visibility="collapsed"
     )
@@ -1088,6 +1090,23 @@ elif page == "💡 Business Insights":
 
     </div>
     """)
+    elif page == "📊 Power BI Dashboard":
+
+    st.title("📊 Power BI Dashboard")
+
+    st.write(
+        "Interactive sales analytics dashboard built with Microsoft Power BI."
+    )
+
+    st.link_button(
+        "📊 Open Power BI Dashboard",
+        "https://app.powerbi.com/groups/me/reports/efc210cb-0c35-4726-a05a-8f3af8226b4c/5bcb04a3e579d7c50026?experience=power-bi",
+        use_container_width=True
+    )
+
+    st.info(
+        "Power BI access may require you to sign in with an authorized Microsoft account."
+    )
 
     # ========================================================
     # RECOMMENDATIONS
