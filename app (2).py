@@ -147,6 +147,7 @@ with st.sidebar:
             "🔮 Sales Prediction",
             "💡 Business Insights",
             "🤖 About Model",
+            "🗄️ SQL Analysis",
             "📊 Power BI Dashboard"
         ],
         label_visibility="collapsed"
@@ -1111,6 +1112,39 @@ elif page == "💡 Business Insights":
     for item in recommendations:
 
         st.write(item)
+
+# =========================================================
+# SQL ANALYSIS
+# =========================================================
+
+elif page == "🗄️ SQL Analysis":
+
+    st.html(f"""
+    <div style="
+        background:{CARD};
+        border:1px solid {BORDER};
+        border-radius:18px;
+        padding:25px;
+        margin-bottom:20px;
+    ">
+        <div style="
+            font-size:25px;
+            font-weight:800;
+            color:{TEXT};
+        ">
+            🗄️ SQL Analysis
+        </div>
+
+        <div style="
+            color:{MUTED};
+            margin-top:7px;
+        ">
+            Business analysis performed using SQL queries.
+        </div>
+    </div>
+    """)
+
+    st.info("SQL analysis module will be connected to the sales database.")
 
 # =========================================================
 # POWER BI DASHBOARD
