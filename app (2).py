@@ -1,4 +1,4 @@
-import streamlit as st
+%%writefile app.py
 
 import streamlit as st
 import pandas as pd
@@ -1090,23 +1090,7 @@ elif page == "💡 Business Insights":
 
     </div>
     """)
-    elif page == "📊 Power BI Dashboard":
-
-    st.title("📊 Power BI Dashboard")
-
-    st.write(
-        "Interactive sales analytics dashboard built with Microsoft Power BI."
-    )
-
-    st.link_button(
-        "📊 Open Power BI Dashboard",
-        "https://app.powerbi.com/groups/me/reports/efc210cb-0c35-4726-a05a-8f3af8226b4c/5bcb04a3e579d7c50026?experience=power-bi",
-        use_container_width=True
-    )
-
-    st.info(
-        "Power BI access may require you to sign in with an authorized Microsoft account."
-    )
+   
 
     # ========================================================
     # RECOMMENDATIONS
@@ -1128,6 +1112,46 @@ elif page == "💡 Business Insights":
 
         st.write(item)
 
+# =========================================================
+# POWER BI DASHBOARD
+# =========================================================
+
+elif page == "📊 Power BI Dashboard":
+
+    st.html(f"""
+    <div style="
+        background:{CARD};
+        border:1px solid {BORDER};
+        border-radius:18px;
+        padding:25px;
+        margin-bottom:20px;
+    ">
+        <div style="
+            font-size:25px;
+            font-weight:800;
+            color:{TEXT};
+        ">
+            📊 Power BI Dashboard
+        </div>
+
+        <div style="
+            color:{MUTED};
+            margin-top:7px;
+        ">
+            Interactive sales analytics dashboard built with Microsoft Power BI.
+        </div>
+    </div>
+    """)
+
+    st.link_button(
+        "📊 Open Power BI Dashboard",
+        "https://app.powerbi.com/groups/me/reports/efc210cb-0c35-4726-a05a-8f3af8226b4c/5bcb04a3e579d7c50026?experience=power-bi",
+        use_container_width=True
+    )
+
+    st.info(
+        "Power BI access may require you to sign in with an authorized Microsoft account."
+    )
 
 
 # =========================================================
