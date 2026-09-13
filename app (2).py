@@ -1138,22 +1138,18 @@ elif page == "📊 Power BI Dashboard":
             color:{MUTED};
             margin-top:7px;
         ">
-            Interactive sales analytics dashboard built with Microsoft Power BI.
+            Interactive Sales Analytics Dashboard
         </div>
     </div>
     """)
 
-    st.link_button(
-        "📊 Open Power BI Dashboard",
-        "https://app.powerbi.com/groups/me/reports/efc210cb-0c35-4726-a05a-8f3af8226b4c/5bcb04a3e579d7c50026?experience=power-bi",
-        use_container_width=True
+    powerbi_url = "https://app.powerbi.com/view?r=eyJrIjoiNzUwZDI1NjYtZjQ2Zi00M2FmLWE1MDQtYjFlNWQ3ODAwZTUxIiwidCI6IjcwMzY2YzAyLTkwOTUtNDMwOS04MDFhLTQ1MzUyOTUwYzg0MiJ9"
+
+    st.components.v1.iframe(
+        src=powerbi_url,
+        height=750,
+        scrolling=True
     )
-
-    st.info(
-        "Power BI access may require you to sign in with an authorized Microsoft account."
-    )
-
-
 # =========================================================
 # ABOUT MODEL
 # =========================================================
