@@ -462,24 +462,40 @@ st.html(
     }}
 
     /* ---------------- BUTTON ---------------- */
-    .stButton > button {
+
+    .stButton > button {{
         width: 100%;
+
         border-radius: 12px;
+
         border: 0;
+
         padding: 13px 20px;
+
         font-weight: 800;
+
         color: white;
+
         background:
             linear-gradient(
                 90deg,
                 #2563EB,
                 #4F46E5
             );
+
         box-shadow:
             0 10px 25px rgba(37,99,235,0.25);
-    }
 
-  
+        transition: all 0.2s ease;
+    }}
+
+    .stButton > button:hover {{
+        transform: translateY(-2px);
+
+        box-shadow:
+            0 14px 30px rgba(37,99,235,0.35);
+    }}
+
     /* ---------------- INPUTS ---------------- */
 
     .stTextInput input,
