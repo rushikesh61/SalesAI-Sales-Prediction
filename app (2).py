@@ -1,6 +1,7 @@
 import streamlit as st
 
 import streamlit as st
+import sqlite3
 import pandas as pd
 import joblib
 from datetime import date
