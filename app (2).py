@@ -463,66 +463,38 @@ st.html(
 
     /* ---------------- BUTTON ---------------- */
 
-  ```css
-/* ---------------- BUTTON ---------------- */
+    .stButton > button {{
+        width: 100%;
 
-.stButton > button {
-    width: 100%;
-    min-height: 52px;
+        border-radius: 12px;
 
-    border-radius: 14px;
+        border: 0;
 
-    border: 1px solid #38BDF8;
+        padding: 13px 20px;
 
-    padding: 14px 22px;
+        font-weight: 800;
 
-    font-size: 16px;
-    font-weight: 850;
+        color: white;
 
-    color: #FFFFFF !important;
+        background:
+            linear-gradient(
+                90deg,
+                #2563EB,
+                #4F46E5
+            );
 
-    background:
-        linear-gradient(
-            135deg,
-            #1D4ED8 0%,
-            #4338CA 50%,
-            #0369A1 100%
-        ) !important;
+        box-shadow:
+            0 10px 25px rgba(37,99,235,0.25);
 
-    box-shadow:
-        0 8px 25px rgba(37,99,235,0.35);
+        transition: all 0.2s ease;
+    }}
 
-    transition: all 0.2s ease;
-}
+    .stButton > button:hover {{
+        transform: translateY(-2px);
 
-.stButton > button:hover {
-    color: #FFFFFF !important;
-
-    background:
-        linear-gradient(
-            135deg,
-            #1E40AF 0%,
-            #3730A3 50%,
-            #075985 100%
-        ) !important;
-
-    border: 1px solid #7DD3FC;
-
-    transform: translateY(-2px);
-
-    box-shadow:
-        0 14px 35px rgba(37,99,235,0.50);
-}
-
-.stButton > button:focus {
-    color: #FFFFFF !important;
-
-    border: 2px solid #7DD3FC;
-
-    box-shadow:
-        0 0 0 4px rgba(56,189,248,0.20);
-}
-```
+        box-shadow:
+            0 14px 30px rgba(37,99,235,0.35);
+    }}
 
     /* ---------------- INPUTS ---------------- */
 
