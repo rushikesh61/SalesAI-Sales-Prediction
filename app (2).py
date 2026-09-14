@@ -6,9 +6,13 @@ from datetime import date
 import os
 from io import BytesIO
 
-# =========================================================
+from openpyxl.styles import PatternFill, Font, Alignment
+from openpyxl.utils import get_column_letter
+
+
+# ============================================================
 # PAGE CONFIG
-# =========================================================
+# ============================================================
 
 st.set_page_config(
     page_title="SalesAI | Sales Prediction",
@@ -17,9 +21,10 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# =========================================================
+
+# ============================================================
 # SESSION STATE
-# =========================================================
+# ============================================================
 
 if "night_mode" not in st.session_state:
     st.session_state.night_mode = True
@@ -27,12 +32,12 @@ if "night_mode" not in st.session_state:
 if "last_prediction" not in st.session_state:
     st.session_state.last_prediction = None
 
-# =========================================================
-# THEME COLORS
-# =========================================================
+
+# ============================================================
+# THEME
+# ============================================================
 
 if st.session_state.night_mode:
-
     BG = "#07111F"
     CARD = "#0D1B2A"
     CARD_2 = "#10243A"
@@ -40,9 +45,7 @@ if st.session_state.night_mode:
     MUTED = "#CBD5E1"
     BORDER = "#1E3A5F"
     INPUT_BG = "#0B1726"
-
 else:
-
     BG = "#F4F7FB"
     CARD = "#FFFFFF"
     CARD_2 = "#F8FAFC"
@@ -52,9 +55,9 @@ else:
     INPUT_BG = "#FFFFFF"
 
 
-# =========================================================
-# CUSTOM CSS
-# =========================================================
+# ============================================================
+# CSS
+# ============================================================
 
 st.html(
     f"""
@@ -84,10 +87,6 @@ html, body, [class*="css"] {{
     max-width: 1450px;
 }}
 
-/* =====================================================
-   SIDEBAR
-   ===================================================== */
-
 section[data-testid="stSidebar"] {{
     background: {CARD};
     border-right: 1px solid {BORDER};
@@ -106,10 +105,6 @@ section[data-testid="stSidebar"] .stCheckbox label {{
     color: {TEXT} !important;
 }}
 
-/* =====================================================
-   GENERAL TEXT
-   ===================================================== */
-
 p, span, label, div {{
     color: {TEXT};
 }}
@@ -121,10 +116,6 @@ h1, h2, h3, h4, h5, h6 {{
 .stMarkdown {{
     color: {TEXT};
 }}
-
-/* =====================================================
-   HERO
-   ===================================================== */
 
 .hero {{
     background:
@@ -172,10 +163,6 @@ h1, h2, h3, h4, h5, h6 {{
     color: #CBD5E1 !important;
 }}
 
-/* =====================================================
-   SECTION HEADINGS
-   ===================================================== */
-
 .section-kicker {{
     color: #38BDF8 !important;
     font-size: 12px;
@@ -197,10 +184,6 @@ h1, h2, h3, h4, h5, h6 {{
     font-size: 15px;
     margin-bottom: 22px;
 }}
-
-/* =====================================================
-   KPI CARDS
-   ===================================================== */
 
 .kpi-card {{
     background: {CARD};
@@ -231,10 +214,6 @@ h1, h2, h3, h4, h5, h6 {{
     margin-top: 5px;
 }}
 
-/* =====================================================
-   INFO CARDS
-   ===================================================== */
-
 .info-card {{
     background: {CARD};
     border: 1px solid {BORDER};
@@ -262,10 +241,6 @@ h1, h2, h3, h4, h5, h6 {{
     margin-top: 6px;
 }}
 
-/* =====================================================
-   FORM LABELS
-   ===================================================== */
-
 .stSelectbox label,
 .stNumberInput label,
 .stDateInput label,
@@ -279,10 +254,6 @@ h1, h2, h3, h4, h5, h6 {{
 .stDateInput div {{
     color: {TEXT} !important;
 }}
-
-/* =====================================================
-   INPUTS
-   ===================================================== */
 
 .stSelectbox > div > div,
 .stNumberInput > div > div,
@@ -306,8 +277,6 @@ h1, h2, h3, h4, h5, h6 {{
     color: {TEXT} !important;
 }}
 
-/* Dropdown menu */
-
 div[data-baseweb="popover"] {{
     background: {CARD} !important;
 }}
@@ -326,8 +295,6 @@ div[data-baseweb="menu"] li:hover {{
     color: #FFFFFF !important;
 }}
 
-/* Date picker */
-
 div[data-baseweb="calendar"] {{
     background: {CARD} !important;
 }}
@@ -335,10 +302,6 @@ div[data-baseweb="calendar"] {{
 div[data-baseweb="calendar"] * {{
     color: {TEXT} !important;
 }}
-
-/* =====================================================
-   BUTTON
-   ===================================================== */
 
 .stButton > button {{
     width: 100%;
@@ -394,10 +357,6 @@ div[data-baseweb="calendar"] * {{
         0 0 0 4px rgba(56,189,248,0.20);
 }}
 
-/* =====================================================
-   DOWNLOAD BUTTON
-   ===================================================== */
-
 .stDownloadButton > button {{
     width: 100%;
     min-height: 50px;
@@ -434,10 +393,6 @@ div[data-baseweb="calendar"] * {{
         0 12px 30px rgba(37,99,235,0.45);
 }}
 
-/* =====================================================
-   METRICS
-   ===================================================== */
-
 div[data-testid="stMetric"] {{
     background: {CARD};
     border: 1px solid {BORDER};
@@ -457,19 +412,11 @@ div[data-testid="stMetricDelta"] {{
     color: #38BDF8 !important;
 }}
 
-/* =====================================================
-   DATAFRAME
-   ===================================================== */
-
 div[data-testid="stDataFrame"] {{
     border: 1px solid {BORDER};
     border-radius: 14px;
     overflow: hidden;
 }}
-
-/* =====================================================
-   EXPANDER
-   ===================================================== */
 
 div[data-testid="stExpander"] {{
     background: {CARD};
@@ -481,17 +428,9 @@ div[data-testid="stExpander"] * {{
     color: {TEXT};
 }}
 
-/* =====================================================
-   ALERT BOXES
-   ===================================================== */
-
 div[data-testid="stAlert"] {{
     border-radius: 14px;
 }}
-
-/* =====================================================
-   FOOTER
-   ===================================================== */
 
 .footer {{
     text-align: center;
@@ -505,26 +444,37 @@ div[data-testid="stAlert"] {{
 )
 
 
-# =========================================================
+# ============================================================
 # LOAD MODEL
-# =========================================================
+# ============================================================
 
 @st.cache_resource
 def load_model():
-    return joblib.load("sales_prediction_final_model.pkl")
+
+    model_path = "sales_prediction_final_model.pkl"
+
+    if not os.path.exists(model_path):
+        raise FileNotFoundError(
+            f"Model file not found: {os.path.abspath(model_path)}"
+        )
+
+    return joblib.load(model_path)
 
 
 try:
     model = load_model()
     model_loaded = True
-except Exception:
+    model_error = None
+
+except Exception as e:
     model = None
     model_loaded = False
+    model_error = e
 
 
-# =========================================================
+# ============================================================
 # SIDEBAR
-# =========================================================
+# ============================================================
 
 with st.sidebar:
 
@@ -597,17 +547,21 @@ with st.sidebar:
 
     else:
 
-        st.error("Model Not Found")
+        st.error("Model Not Loaded")
 
         st.caption(
-            "Make sure sales_prediction_final_model.pkl "
-            "is available in the repository."
+            "Model loading failed. See the error below."
+        )
+
+        st.code(
+            f"{type(model_error).__name__}: {str(model_error)}",
+            language="text"
         )
 
 
-# =========================================================
-# HERO
-# =========================================================
+# ============================================================
+# HERO SECTION
+# ============================================================
 
 st.html(
     """
@@ -633,9 +587,9 @@ st.html(
 )
 
 
-# =========================================================
+# ============================================================
 # DASHBOARD
-# =========================================================
+# ============================================================
 
 if page == "🏠 Dashboard":
 
@@ -749,9 +703,9 @@ if page == "🏠 Dashboard":
         )
 
 
-# =========================================================
+# ============================================================
 # SALES PREDICTION
-# =========================================================
+# ============================================================
 
 elif page == "🔮 Sales Prediction":
 
@@ -775,8 +729,16 @@ elif page == "🔮 Sales Prediction":
     if not model_loaded:
 
         st.error(
-            "Model could not be loaded. "
-            "Please check sales_prediction_final_model.pkl."
+            "Model could not be loaded."
+        )
+
+        st.warning(
+            "Please check the model error shown in the sidebar."
+        )
+
+        st.code(
+            f"{type(model_error).__name__}: {str(model_error)}",
+            language="text"
         )
 
     else:
@@ -786,7 +748,6 @@ elif page == "🔮 Sales Prediction":
         col1, col2, col3, col4 = st.columns(4)
 
         with col1:
-
             unit_price = st.number_input(
                 "Unit Price",
                 min_value=0.0,
@@ -795,7 +756,6 @@ elif page == "🔮 Sales Prediction":
             )
 
         with col2:
-
             qty_ordered = st.number_input(
                 "Quantity Ordered",
                 min_value=1,
@@ -804,7 +764,6 @@ elif page == "🔮 Sales Prediction":
             )
 
         with col3:
-
             discount = st.number_input(
                 "Discount Offered",
                 min_value=0.0,
@@ -813,7 +772,6 @@ elif page == "🔮 Sales Prediction":
             )
 
         with col4:
-
             freight_expenses = st.number_input(
                 "Freight Expenses",
                 min_value=0.0,
@@ -1022,20 +980,13 @@ elif page == "🔮 Sales Prediction":
 
                 st.session_state.last_prediction = prediction
 
-                # =================================================
-                # SALES CATEGORY
-                # =================================================
-
                 if prediction < 500:
-
                     category = "Low Sales 📉"
 
                 elif prediction < 2000:
-
                     category = "Medium Sales 📊"
 
                 else:
-
                     category = "High Sales 🚀"
 
                 st.success(
@@ -1060,15 +1011,14 @@ elif page == "🔮 Sales Prediction":
                         category
                     )
 
-                # =================================================
+                # ====================================================
                 # DOWNLOAD PREDICTION
-                # =================================================
+                # ====================================================
 
                 st.markdown("---")
 
                 st.markdown("### 📥 Download Prediction")
 
-                # Combine input details + prediction
                 prediction_details = input_data.copy()
 
                 prediction_details["Predicted Sales"] = round(
@@ -1082,7 +1032,6 @@ elif page == "🔮 Sales Prediction":
                     date.today().isoformat()
                 )
 
-                # Show complete prediction details
                 st.dataframe(
                     prediction_details,
                     use_container_width=True,
@@ -1090,10 +1039,6 @@ elif page == "🔮 Sales Prediction":
                 )
 
                 download_col1, download_col2 = st.columns(2)
-
-                # =================================================
-                # CSV DOWNLOAD
-                # =================================================
 
                 with download_col1:
 
@@ -1110,10 +1055,6 @@ elif page == "🔮 Sales Prediction":
                         mime="text/csv",
                         use_container_width=True
                     )
-
-                # =================================================
-                # EXCEL DOWNLOAD
-                # =================================================
 
                 with download_col2:
 
@@ -1132,7 +1073,6 @@ elif page == "🔮 Sales Prediction":
 
                         worksheet = writer.sheets["Prediction"]
 
-                        # Header formatting
                         header_fill = PatternFill(
                             fill_type="solid",
                             fgColor="1D4ED8"
@@ -1153,7 +1093,6 @@ elif page == "🔮 Sales Prediction":
                             cell.font = header_font
                             cell.alignment = header_alignment
 
-                        # Automatic column width
                         for column_cells in worksheet.columns:
 
                             max_length = 0
@@ -1197,10 +1136,6 @@ elif page == "🔮 Sales Prediction":
                         use_container_width=True
                     )
 
-                # =================================================
-                # BUSINESS RECOMMENDATION
-                # =================================================
-
                 st.markdown("### 💡 Business Recommendation")
 
                 if prediction < 500:
@@ -1237,9 +1172,9 @@ elif page == "🔮 Sales Prediction":
                 st.exception(e)
 
 
-# =========================================================
+# ============================================================
 # BUSINESS INSIGHTS
-# =========================================================
+# ============================================================
 
 elif page == "💡 Business Insights":
 
@@ -1361,14 +1296,12 @@ elif page == "💡 Business Insights":
 
     for item in recommendations:
 
-        st.markdown(
-            f"• {item}"
-        )
+        st.markdown(f"• {item}")
 
 
-# =========================================================
+# ============================================================
 # ABOUT MODEL
-# =========================================================
+# ============================================================
 
 elif page == "🤖 About Model":
 
@@ -1469,10 +1402,6 @@ elif page == "🤖 About Model":
         hide_index=True
     )
 
-    # =====================================================
-    # ACTUAL FEATURE IMPORTANCE
-    # =====================================================
-
     st.html(
         """
         <div class="section-kicker">
@@ -1490,76 +1419,84 @@ elif page == "🤖 About Model":
         """
     )
 
-    try:
+    if model_loaded:
 
-        estimator = model.named_steps["model"]
+        try:
 
-        preprocessor = model.named_steps["preprocessor"]
+            estimator = model.named_steps["model"]
 
-        feature_names = (
-            preprocessor
-            .get_feature_names_out()
-        )
+            preprocessor = model.named_steps["preprocessor"]
 
-        importance_values = (
-            estimator.feature_importances_
-        )
-
-        feature_importance = pd.DataFrame({
-            "Feature": feature_names,
-            "Importance": importance_values
-        })
-
-        feature_importance["Feature"] = (
-            feature_importance["Feature"]
-            .str.replace(
-                "num__",
-                "",
-                regex=False
+            feature_names = (
+                preprocessor
+                .get_feature_names_out()
             )
-            .str.replace(
-                "cat__",
-                "",
-                regex=False
+
+            importance_values = (
+                estimator.feature_importances_
             )
-        )
 
-        feature_importance = (
-            feature_importance
-            .sort_values(
-                "Importance",
-                ascending=False
+            feature_importance = pd.DataFrame({
+                "Feature": feature_names,
+                "Importance": importance_values
+            })
+
+            feature_importance["Feature"] = (
+                feature_importance["Feature"]
+                .str.replace(
+                    "num__",
+                    "",
+                    regex=False
+                )
+                .str.replace(
+                    "cat__",
+                    "",
+                    regex=False
+                )
             )
-            .head(15)
-            .reset_index(drop=True)
-        )
 
-        chart_data = (
-            feature_importance
-            .set_index("Feature")
-        )
+            feature_importance = (
+                feature_importance
+                .sort_values(
+                    "Importance",
+                    ascending=False
+                )
+                .head(15)
+                .reset_index(drop=True)
+            )
 
-        # VERTICAL FEATURE IMPORTANCE CHART
-        st.bar_chart(
-            chart_data,
-            height=600
-        )
+            chart_data = (
+                feature_importance
+                .set_index("Feature")
+            )
 
-        st.caption(
-            "Top 15 features ranked by their contribution "
-            "to the Gradient Boosting model."
-        )
+            st.bar_chart(
+                chart_data,
+                height=600
+            )
 
-        st.dataframe(
-            feature_importance,
-            use_container_width=True,
-            hide_index=True
-        )
+            st.caption(
+                "Top 15 features ranked by their contribution "
+                "to the Gradient Boosting model."
+            )
 
-    except Exception as e:
+            st.dataframe(
+                feature_importance,
+                use_container_width=True,
+                hide_index=True
+            )
 
-        st.warning(
-            f"Feature importance could not be loaded: {e}"
+        except Exception as e:
+
+            st.warning(
+                f"Feature importance could not be loaded: {e}"
+            )
+
+    else:
+
+        st.info(
+            "Feature importance is unavailable because the model "
+            "could not be loaded."
         )
 
     st.markdown("### 🧾 Prediction Inputs")
@@ -1612,9 +1549,9 @@ elif page == "🤖 About Model":
     )
 
 
-# =========================================================
+# ============================================================
 # SQL ANALYSIS
-# =========================================================
+# ============================================================
 
 elif page == "🗄️ SQL Analysis":
 
@@ -1703,9 +1640,9 @@ elif page == "🗄️ SQL Analysis":
         )
 
 
-# =========================================================
-# POWER BI
-# =========================================================
+# ============================================================
+# POWER BI DASHBOARD
+# ============================================================
 
 elif page == "📊 Power BI Dashboard":
 
@@ -1764,9 +1701,9 @@ elif page == "📊 Power BI Dashboard":
         )
 
 
-# =========================================================
+# ============================================================
 # FOOTER
-# =========================================================
+# ============================================================
 
 st.html(
     """
