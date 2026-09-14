@@ -1,6 +1,4 @@
 import streamlit as st
-
-import streamlit as st
 import sqlite3
 import pandas as pd
 import joblib
@@ -67,13 +65,23 @@ else:
 
 st.html(f"""
 <style>
-
+/* ---------- Global ---------- */
 .stApp {{
-    background: {BG};
+    background:
+        radial-gradient(circle at 10% 0%, rgba(37,99,235,0.08), transparent 30%),
+        radial-gradient(circle at 90% 10%, rgba(124,58,237,0.07), transparent 28%),
+        {BG};
+    color: {TEXT};
+}}
+
+.main .block-container {{
+    max-width: 1450px;
+    padding-top: 2rem;
+    padding-bottom: 2rem;
 }}
 
 section[data-testid="stSidebar"] {{
-    background: {CARD};
+    background: linear-gradient(180deg, {CARD} 0%, {CARD2} 100%);
     border-right: 1px solid {BORDER};
 }}
 
@@ -81,29 +89,197 @@ section[data-testid="stSidebar"] * {{
     color: {TEXT};
 }}
 
+section[data-testid="stSidebar"] [data-testid="stRadio"] > div {{
+    gap: 7px;
+}}
+
+section[data-testid="stSidebar"] label {{
+    border-radius: 12px;
+    padding: 8px 10px;
+    transition: all .2s ease;
+}}
+
+section[data-testid="stSidebar"] label:hover {{
+    background: rgba(37,99,235,.10);
+}}
+
+h1, h2, h3, h4 {{
+    color: {TEXT};
+    letter-spacing: -0.02em;
+}}
+
+p, label, .stCaption {{
+    color: {MUTED};
+}}
+
+/* ---------- Buttons ---------- */
 .stButton > button {{
     border-radius: 12px;
-    border: none;
-    font-weight: 700;
+    border: 1px solid rgba(37,99,235,.25);
     min-height: 46px;
-    transition: all 0.2s ease;
+    font-weight: 800;
+    letter-spacing: .01em;
+    transition: transform .18s ease, box-shadow .18s ease;
+    box-shadow: 0 5px 16px rgba(15,23,42,.08);
 }}
 
 .stButton > button:hover {{
     transform: translateY(-2px);
+    box-shadow: 0 10px 24px rgba(37,99,235,.18);
 }}
 
-div[data-testid="stMetric"] {{
-    background: {CARD};
-    border: 1px solid {BORDER};
-    border-radius: 16px;
-    padding: 18px;
+/* ---------- Inputs ---------- */
+div[data-baseweb="select"] > div,
+div[data-testid="stNumberInput"] > div,
+div[data-testid="stDateInput"] > div {{
+    border-radius: 11px;
 }}
 
-h1, h2, h3, h4, p, label {{
+div[data-testid="stNumberInput"] input,
+div[data-baseweb="select"] input {{
     color: {TEXT};
 }}
 
+/* ---------- Metrics ---------- */
+div[data-testid="stMetric"] {{
+    background: linear-gradient(145deg, {CARD}, {CARD2});
+    border: 1px solid {BORDER};
+    border-radius: 16px;
+    padding: 17px 18px;
+    box-shadow: 0 8px 25px rgba(15,23,42,.06);
+}}
+
+div[data-testid="stMetric"] label {{
+    color: {MUTED};
+}}
+
+div[data-testid="stMetricValue"] {{
+    color: {TEXT};
+    font-weight: 850;
+}}
+
+/* ---------- Dataframe / tables ---------- */
+div[data-testid="stDataFrame"] {{
+    border: 1px solid {BORDER};
+    border-radius: 14px;
+    overflow: hidden;
+}}
+
+/* ---------- Alerts ---------- */
+div[data-testid="stAlert"] {{
+    border-radius: 13px;
+}}
+
+/* ---------- Hero ---------- */
+.salesai-hero {{
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(135deg,#0f3b8f 0%,#2563eb 42%,#7c3aed 100%);
+    border-radius: 26px;
+    padding: 42px 44px;
+    margin: 0 0 28px 0;
+    box-shadow: 0 20px 55px rgba(37,99,235,.22);
+}}
+
+.salesai-hero::after {{
+    content: "";
+    position: absolute;
+    width: 240px;
+    height: 240px;
+    right: -70px;
+    top: -90px;
+    border-radius: 50%;
+    background: rgba(255,255,255,.10);
+}}
+
+.salesai-hero-title {{
+    font-size: clamp(32px,4vw,48px);
+    font-weight: 900;
+    color: #fff !important;
+    line-height: 1.05;
+}}
+
+.salesai-hero-subtitle {{
+    font-size: 18px;
+    font-weight: 600;
+    color: rgba(255,255,255,.90) !important;
+    margin-top: 10px;
+}}
+
+.salesai-pill {{
+    display: inline-block;
+    margin-top: 18px;
+    padding: 8px 15px;
+    border-radius: 999px;
+    color: #fff !important;
+    background: rgba(255,255,255,.14);
+    border: 1px solid rgba(255,255,255,.22);
+    font-size: 13px;
+    font-weight: 700;
+}}
+
+/* ---------- Cards ---------- */
+.ai-card {{
+    background: linear-gradient(145deg,{CARD},{CARD2});
+    border: 1px solid {BORDER};
+    border-radius: 18px;
+    padding: 23px;
+    box-shadow: 0 8px 25px rgba(15,23,42,.055);
+    height: 100%;
+}}
+
+.ai-card:hover {{
+    border-color: rgba(37,99,235,.30);
+}}
+
+.section-label {{
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    font-size: 13px;
+    font-weight: 800;
+    color: #2563eb !important;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    margin-bottom: 5px;
+}}
+
+.result-card {{
+    background: linear-gradient(135deg,#0f3b8f 0%,#2563eb 48%,#7c3aed 100%);
+    border-radius: 22px;
+    padding: 34px;
+    text-align: center;
+    color: white !important;
+    box-shadow: 0 18px 45px rgba(37,99,235,.24);
+}}
+
+.result-card * {{
+    color: white !important;
+}}
+
+.result-value {{
+    font-size: clamp(36px,5vw,54px);
+    font-weight: 900;
+    margin: 8px 0;
+}}
+
+.live-summary {{
+    background: {CARD2};
+    border: 1px solid {BORDER};
+    border-radius: 17px;
+    padding: 20px;
+}}
+
+@media (max-width: 768px) {{
+    .main .block-container {{
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }}
+    .salesai-hero {{
+        padding: 30px 24px;
+        border-radius: 20px;
+    }}
+}}
 </style>
 """)
 
@@ -173,7 +349,7 @@ with st.sidebar:
 
     st.success("Model Loaded")
 
-    st.caption("Gradient Boosting Regressor")
+    st.caption("⚡ Gradient Boosting Regressor")
 
     st.metric(
         "Model R²",
@@ -186,47 +362,16 @@ with st.sidebar:
 # =========================================================
 
 st.html(f"""
-<div style="
-    background:linear-gradient(135deg,#2563eb 0%,#7c3aed 50%,#0891b2 100%);
-    border-radius:24px;
-    padding:42px;
-    margin-bottom:25px;
-    box-shadow:0 18px 45px rgba(37,99,235,0.25);
-    color:white;
-">
-
-    <div style="
-        font-size:42px;
-        font-weight:900;
-        color:white;
-        margin-bottom:8px;
-    ">
-        📊 SalesAI
-    </div>
-
-    <div style="
-        font-size:20px;
-        font-weight:600;
-        color:white;
-        margin-bottom:18px;
-    ">
+<div class="salesai-hero">
+    <div class="salesai-hero-title">📊 SalesAI</div>
+    <div class="salesai-hero-subtitle">
         Intelligent Sales Prediction & Business Decision Support
     </div>
-
-    <div style="
-        display:inline-block;
-        padding:8px 16px;
-        border-radius:30px;
-        background:rgba(255,255,255,0.18);
-        border:1px solid rgba(255,255,255,0.25);
-        font-size:14px;
-        color:white;
-    ">
+    <div class="salesai-pill">
         🤖 Machine Learning &nbsp; • &nbsp;
         📈 Business Analytics &nbsp; • &nbsp;
-        🔮 Sales Prediction
+        🔮 Sales Forecasting
     </div>
-
 </div>
 """)
 
@@ -664,70 +809,30 @@ elif page == "🔮 Sales Prediction":
     # -----------------------------------------------------
 
     st.html(f"""
-    <div style="
-        background:{CARD2};
-        border:1px solid {BORDER};
-        border-radius:18px;
-        padding:22px;
-        margin-top:20px;
-        margin-bottom:20px;
-    ">
-
-        <div style="
-            font-size:19px;
-            font-weight:800;
-            color:{TEXT};
-            margin-bottom:15px;
-        ">
-            ⚡ Live Prediction Summary
+<div class="live-summary">
+    <div style="font-size:19px;font-weight:850;color:{TEXT};margin-bottom:15px;">
+        ⚡ Live Prediction Summary
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;">
+        <div>
+            <div style="color:{MUTED};font-size:12px;">Unit Price</div>
+            <div style="color:{TEXT};font-size:18px;font-weight:750;">₹{unit_price:,.2f}</div>
         </div>
-
-        <div style="
-            display:flex;
-            justify-content:space-between;
-            flex-wrap:wrap;
-            gap:15px;
-        ">
-
-            <div>
-                <div style="color:{MUTED};font-size:12px;">
-                    Unit Price
-                </div>
-                <div style="color:{TEXT};font-size:18px;font-weight:700;">
-                    ₹{unit_price:,.2f}
-                </div>
-            </div>
-
-            <div>
-                <div style="color:{MUTED};font-size:12px;">
-                    Quantity
-                </div>
-                <div style="color:{TEXT};font-size:18px;font-weight:700;">
-                    {qty_ordered}
-                </div>
-            </div>
-
-            <div>
-                <div style="color:{MUTED};font-size:12px;">
-                    Discount
-                </div>
-                <div style="color:{TEXT};font-size:18px;font-weight:700;">
-                    {discount:.1f}%
-                </div>
-            </div>
-
-            <div>
-                <div style="color:{MUTED};font-size:12px;">
-                    Region
-                </div>
-                <div style="color:{TEXT};font-size:18px;font-weight:700;">
-                    {region}
-                </div>
-            </div>
-
+        <div>
+            <div style="color:{MUTED};font-size:12px;">Quantity</div>
+            <div style="color:{TEXT};font-size:18px;font-weight:750;">{qty_ordered}</div>
+        </div>
+        <div>
+            <div style="color:{MUTED};font-size:12px;">Discount</div>
+            <div style="color:{TEXT};font-size:18px;font-weight:750;">{discount:.1f}%</div>
+        </div>
+        <div>
+            <div style="color:{MUTED};font-size:12px;">Region</div>
+            <div style="color:{TEXT};font-size:18px;font-weight:750;">{region}</div>
         </div>
     </div>
-    """)
+</div>
+""")
 
     # -----------------------------------------------------
     # PREDICTION
@@ -791,42 +896,19 @@ elif page == "🔮 Sales Prediction":
             emoji = "🟢"
 
         st.html(f"""
-        <div style="
-            background:linear-gradient(135deg,#2563eb,#7c3aed);
-            border-radius:22px;
-            padding:35px;
-            margin-top:25px;
-            text-align:center;
-            color:white;
-            box-shadow:0 15px 40px rgba(37,99,235,0.25);
-        ">
-
-            <div style="
-                font-size:18px;
-                color:white;
-                opacity:0.9;
-            ">
-                💰 Predicted Sales
-            </div>
-
-            <div style="
-                font-size:48px;
-                font-weight:900;
-                color:white;
-                margin:8px 0;
-            ">
-                ₹{prediction:,.2f}
-            </div>
-
-            <div style="
-                font-size:18px;
-                color:white;
-            ">
-                {emoji} {category}
-            </div>
-
-        </div>
-        """)
+<div class="result-card">
+    <div style="font-size:17px;font-weight:700;opacity:.88;">
+        💰 Predicted Sales
+    </div>
+    <div class="result-value">₹{prediction:,.2f}</div>
+    <div style="font-size:18px;font-weight:750;">
+        {emoji} {category}
+    </div>
+    <div style="font-size:13px;opacity:.78;margin-top:8px;">
+        AI-generated estimate based on order, product, date and regional factors
+    </div>
+</div>
+""")
 
         # -------------------------------------------------
         # RECOMMENDATIONS
@@ -1113,6 +1195,61 @@ elif page == "💡 Business Insights":
     for item in recommendations:
 
         st.write(item)
+
+
+# =========================================================
+# SQL ANALYSIS
+# =========================================================
+
+elif page == "🗄️ SQL Analysis":
+
+    st.html(f"""
+    <div class="ai-card" style="margin-bottom:22px;">
+        <div class="section-label">DATABASE ANALYTICS</div>
+        <div style="font-size:26px;font-weight:850;color:{TEXT};">
+            🗄️ SQL Analysis
+        </div>
+        <div style="color:{MUTED};margin-top:7px;">
+            Explore the SQLite sales database and key business queries.
+        </div>
+    </div>
+    """)
+
+    try:
+        conn = sqlite3.connect("sales.db")
+        tables = pd.read_sql_query(
+            "SELECT name FROM sqlite_master WHERE type='table' ORDER BY name",
+            conn
+        )
+
+        if tables.empty:
+            st.info("No SQLite tables were found.")
+        else:
+            table_name = st.selectbox("Select Table", tables["name"].tolist())
+
+            row_count = pd.read_sql_query(
+                f"SELECT COUNT(*) AS Rows FROM [{table_name}]",
+                conn
+            ).iloc[0, 0]
+
+            c1, c2 = st.columns(2)
+            with c1:
+                st.metric("Rows", f"{row_count:,}")
+            with c2:
+                st.metric("Tables Available", len(tables))
+
+            st.subheader("🔎 Data Preview")
+            preview = pd.read_sql_query(
+                f"SELECT * FROM [{table_name}] LIMIT 100",
+                conn
+            )
+            st.dataframe(preview, use_container_width=True, hide_index=True)
+
+        conn.close()
+
+    except Exception as e:
+        st.warning("SQLite database is not available in the current app folder.")
+        st.caption(f"Details: {e}")
 
 
 # =========================================================
