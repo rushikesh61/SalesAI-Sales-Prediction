@@ -5,7 +5,6 @@ import sqlite3
 from datetime import date
 import os
 
-
 # =========================================================
 # PAGE CONFIG
 # =========================================================
@@ -17,7 +16,6 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-
 # =========================================================
 # SESSION STATE
 # =========================================================
@@ -28,9 +26,8 @@ if "night_mode" not in st.session_state:
 if "last_prediction" not in st.session_state:
     st.session_state.last_prediction = None
 
-
 # =========================================================
-# THEME
+# THEME COLORS
 # =========================================================
 
 if st.session_state.night_mode:
@@ -39,7 +36,7 @@ if st.session_state.night_mode:
     CARD = "#0D1B2A"
     CARD_2 = "#10243A"
     TEXT = "#F8FAFC"
-    MUTED = "#94A3B8"
+    MUTED = "#CBD5E1"
     BORDER = "#1E3A5F"
     INPUT_BG = "#0B1726"
 
@@ -49,7 +46,7 @@ else:
     CARD = "#FFFFFF"
     CARD_2 = "#F8FAFC"
     TEXT = "#0F172A"
-    MUTED = "#64748B"
+    MUTED = "#475569"
     BORDER = "#D9E2EC"
     INPUT_BG = "#FFFFFF"
 
@@ -63,7 +60,12 @@ st.html(
 <style>
 
 html, body, [class*="css"] {{
-    font-family: "Segoe UI", Arial, sans-serif;
+    font-family:
+        Inter,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
 }}
 
 .stApp {{
@@ -71,12 +73,15 @@ html, body, [class*="css"] {{
     color: {TEXT};
 }}
 
+.main {{
+    background: {BG};
+}}
+
 .block-container {{
     padding-top: 2rem;
     padding-bottom: 3rem;
     max-width: 1450px;
 }}
-
 
 /* =====================================================
    SIDEBAR
@@ -88,9 +93,33 @@ section[data-testid="stSidebar"] {{
 }}
 
 section[data-testid="stSidebar"] * {{
+    color: {TEXT} !important;
+}}
+
+section[data-testid="stSidebar"] .stRadio label {{
+    color: {TEXT} !important;
+    font-weight: 600;
+}}
+
+section[data-testid="stSidebar"] .stCheckbox label {{
+    color: {TEXT} !important;
+}}
+
+/* =====================================================
+   GENERAL TEXT
+   ===================================================== */
+
+p, span, label, div {{
     color: {TEXT};
 }}
 
+h1, h2, h3, h4, h5, h6 {{
+    color: {TEXT} !important;
+}}
+
+.stMarkdown {{
+    color: {TEXT};
+}}
 
 /* =====================================================
    HERO
@@ -104,88 +133,69 @@ section[data-testid="stSidebar"] * {{
             #172554 45%,
             #075985 100%
         );
-
-    border-radius: 24px;
-    padding: 42px;
-    margin-bottom: 28px;
-
     border: 1px solid #1E40AF;
+    border-radius: 24px;
+    padding: 45px;
+    margin-bottom: 28px;
+    box-shadow: 0 20px 50px rgba(15,23,42,0.30);
+}}
 
-    box-shadow:
-        0 20px 50px rgba(15, 23, 42, 0.35);
+.hero-content {{
+    max-width: 900px;
 }}
 
 .hero-badge {{
     display: inline-block;
-
+    background: rgba(56,189,248,0.15);
+    color: #7DD3FC !important;
+    border: 1px solid rgba(125,211,252,0.35);
     padding: 7px 14px;
-
-    border-radius: 30px;
-
-    background: rgba(56, 189, 248, 0.12);
-
-    border: 1px solid rgba(125, 211, 252, 0.35);
-
-    color: #7DD3FC;
-
+    border-radius: 999px;
     font-size: 12px;
-
     font-weight: 800;
-
-    letter-spacing: 1.2px;
-
+    letter-spacing: 1px;
     margin-bottom: 15px;
 }}
 
 .hero-title {{
-    font-size: 48px;
-
+    font-size: 52px;
     font-weight: 900;
-
-    color: #FFFFFF;
-
-    margin-bottom: 8px;
+    color: #FFFFFF !important;
+    line-height: 1.1;
 }}
 
 .hero-subtitle {{
-    font-size: 18px;
-
-    color: #CBD5E1;
-
-    max-width: 800px;
-
+    margin-top: 12px;
+    font-size: 19px;
     line-height: 1.6;
+    color: #CBD5E1 !important;
 }}
 
-
 /* =====================================================
-   SECTION
+   SECTION HEADINGS
    ===================================================== */
 
 .section-kicker {{
-    color: #38BDF8;
-
+    color: #38BDF8 !important;
     font-size: 12px;
-
-    font-weight: 800;
-
+    font-weight: 850;
     letter-spacing: 1.5px;
-
-    margin-top: 28px;
-
-    margin-bottom: 6px;
+    text-transform: uppercase;
+    margin-top: 20px;
 }}
 
 .section-title {{
+    color: {TEXT} !important;
     font-size: 30px;
-
     font-weight: 850;
-
-    color: {TEXT};
-
     margin-bottom: 8px;
 }}
 
+.section-description {{
+    color: {MUTED} !important;
+    font-size: 15px;
+    margin-bottom: 22px;
+}}
 
 /* =====================================================
    KPI CARDS
@@ -193,47 +203,32 @@ section[data-testid="stSidebar"] * {{
 
 .kpi-card {{
     background: {CARD};
-
     border: 1px solid {BORDER};
-
     border-radius: 18px;
-
     padding: 22px;
-
-    min-height: 130px;
-
-    box-shadow:
-        0 8px 25px rgba(0, 0, 0, 0.08);
+    min-height: 145px;
+    box-shadow: 0 8px 25px rgba(15,23,42,0.10);
 }}
 
 .kpi-label {{
-    color: {MUTED};
-
+    color: {MUTED} !important;
     font-size: 13px;
-
     font-weight: 700;
-
-    margin-bottom: 8px;
 }}
 
 .kpi-value {{
-    color: {TEXT};
-
-    font-size: 29px;
-
+    color: {TEXT} !important;
+    font-size: 31px;
     font-weight: 900;
+    margin-top: 8px;
 }}
 
 .kpi-sub {{
-    color: #38BDF8;
-
+    color: #38BDF8 !important;
     font-size: 12px;
-
-    margin-top: 6px;
-
     font-weight: 700;
+    margin-top: 5px;
 }}
-
 
 /* =====================================================
    INFO CARDS
@@ -241,43 +236,104 @@ section[data-testid="stSidebar"] * {{
 
 .info-card {{
     background: {CARD};
-
     border: 1px solid {BORDER};
-
     border-radius: 18px;
-
     padding: 24px;
-
-    height: 100%;
-
-    box-shadow:
-        0 8px 25px rgba(0, 0, 0, 0.06);
+    margin: 8px 0;
+    min-height: 155px;
 }}
 
 .info-icon {{
-    font-size: 30px;
-
-    margin-bottom: 10px;
+    font-size: 28px;
 }}
 
 .info-title {{
-    color: {TEXT};
-
-    font-size: 19px;
-
-    font-weight: 850;
-
-    margin-bottom: 8px;
+    color: {TEXT} !important;
+    font-size: 18px;
+    font-weight: 800;
+    margin-top: 8px;
 }}
 
 .info-text {{
-    color: {MUTED};
-
+    color: {MUTED} !important;
     font-size: 14px;
-
     line-height: 1.6;
+    margin-top: 6px;
 }}
 
+/* =====================================================
+   FORM LABELS
+   ===================================================== */
+
+.stSelectbox label,
+.stNumberInput label,
+.stDateInput label,
+.stTextInput label {{
+    color: {TEXT} !important;
+    font-weight: 750 !important;
+}}
+
+.stSelectbox div,
+.stNumberInput div,
+.stDateInput div {{
+    color: {TEXT} !important;
+}}
+
+/* =====================================================
+   INPUTS
+   ===================================================== */
+
+.stSelectbox > div > div,
+.stNumberInput > div > div,
+.stDateInput > div > div {{
+    background: {INPUT_BG} !important;
+    border-color: {BORDER} !important;
+}}
+
+.stSelectbox input,
+.stNumberInput input,
+.stDateInput input {{
+    color: {TEXT} !important;
+    background: {INPUT_BG} !important;
+}}
+
+.stSelectbox [data-baseweb="select"] {{
+    background: {INPUT_BG} !important;
+}}
+
+.stSelectbox [data-baseweb="select"] * {{
+    color: {TEXT} !important;
+}}
+
+/* Dropdown menu */
+
+div[data-baseweb="popover"] {{
+    background: {CARD} !important;
+}}
+
+div[data-baseweb="menu"] {{
+    background: {CARD} !important;
+}}
+
+div[data-baseweb="menu"] li {{
+    background: {CARD} !important;
+    color: {TEXT} !important;
+}}
+
+div[data-baseweb="menu"] li:hover {{
+    background: #1E3A5F !important;
+    color: #FFFFFF !important;
+}}
+
+/* Date picker */
+
+div[data-baseweb="calendar"] {{
+    background: {CARD} !important;
+}}
+
+div[data-baseweb="calendar"] * {{
+    color: {TEXT} !important;
+}}
 
 /* =====================================================
    BUTTON
@@ -285,19 +341,12 @@ section[data-testid="stSidebar"] * {{
 
 .stButton > button {{
     width: 100%;
-
     min-height: 52px;
-
     border-radius: 14px;
-
     border: 1px solid #38BDF8;
-
     padding: 14px 22px;
-
     font-size: 16px;
-
     font-weight: 850;
-
     color: #FFFFFF !important;
 
     background:
@@ -309,9 +358,13 @@ section[data-testid="stSidebar"] * {{
         ) !important;
 
     box-shadow:
-        0 8px 25px rgba(37, 99, 235, 0.35);
+        0 8px 25px rgba(37,99,235,0.35);
 
     transition: all 0.2s ease;
+}}
+
+.stButton > button p {{
+    color: #FFFFFF !important;
 }}
 
 .stButton > button:hover {{
@@ -326,59 +379,74 @@ section[data-testid="stSidebar"] * {{
         ) !important;
 
     border: 1px solid #7DD3FC;
-
     transform: translateY(-2px);
 
     box-shadow:
-        0 14px 35px rgba(37, 99, 235, 0.50);
+        0 14px 35px rgba(37,99,235,0.50);
 }}
 
 .stButton > button:focus {{
     color: #FFFFFF !important;
-
     border: 2px solid #7DD3FC;
 
     box-shadow:
-        0 0 0 4px rgba(56, 189, 248, 0.20);
+        0 0 0 4px rgba(56,189,248,0.20);
 }}
-
 
 /* =====================================================
-   INPUTS
+   METRICS
    ===================================================== */
 
-div[data-baseweb="input"],
-div[data-baseweb="select"] {{
-    border-radius: 10px;
+div[data-testid="stMetric"] {{
+    background: {CARD};
+    border: 1px solid {BORDER};
+    border-radius: 16px;
+    padding: 18px;
 }}
 
-input {{
+div[data-testid="stMetricLabel"] {{
+    color: {MUTED} !important;
+}}
+
+div[data-testid="stMetricValue"] {{
     color: {TEXT} !important;
 }}
 
-textarea {{
-    color: {TEXT} !important;
+div[data-testid="stMetricDelta"] {{
+    color: #38BDF8 !important;
 }}
-
 
 /* =====================================================
    DATAFRAME
    ===================================================== */
 
 div[data-testid="stDataFrame"] {{
+    border: 1px solid {BORDER};
     border-radius: 14px;
     overflow: hidden;
 }}
 
-
 /* =====================================================
-   ALERTS
+   EXPANDER
    ===================================================== */
 
-.stAlert {{
+div[data-testid="stExpander"] {{
+    background: {CARD};
+    border: 1px solid {BORDER};
     border-radius: 14px;
 }}
 
+div[data-testid="stExpander"] * {{
+    color: {TEXT};
+}}
+
+/* =====================================================
+   ALERT BOXES
+   ===================================================== */
+
+div[data-testid="stAlert"] {{
+    border-radius: 14px;
+}}
 
 /* =====================================================
    FOOTER
@@ -386,16 +454,9 @@ div[data-testid="stDataFrame"] {{
 
 .footer {{
     text-align: center;
-
-    color: {MUTED};
-
+    padding: 30px 0 10px 0;
+    color: {MUTED} !important;
     font-size: 13px;
-
-    padding: 30px 0 10px;
-
-    border-top: 1px solid {BORDER};
-
-    margin-top: 45px;
 }}
 
 </style>
@@ -409,22 +470,14 @@ div[data-testid="stDataFrame"] {{
 
 @st.cache_resource
 def load_model():
-
-    model_path = "sales_prediction_final_model.pkl"
-
-    return joblib.load(model_path)
+    return joblib.load("sales_prediction_final_model.pkl")
 
 
 try:
-
     model = load_model()
-
     model_loaded = True
-
 except Exception:
-
     model = None
-
     model_loaded = False
 
 
@@ -439,18 +492,17 @@ with st.sidebar:
         <div style="
             font-size:28px;
             font-weight:900;
-            margin-bottom:4px;
+            margin-bottom:5px;
         ">
-        📊 SalesAI
+            📊 SalesAI
         </div>
 
         <div style="
-            color:#38BDF8;
-            font-size:12px;
-            font-weight:700;
+            color:#94A3B8;
+            font-size:13px;
             margin-bottom:25px;
         ">
-        SALES INTELLIGENCE PLATFORM
+            Sales Prediction Platform
         </div>
         """,
         unsafe_allow_html=True
@@ -468,14 +520,18 @@ with st.sidebar:
         ]
     )
 
-    st.divider()
+    st.markdown("---")
 
-    st.session_state.night_mode = st.toggle(
+    night_mode = st.toggle(
         "🌙 Night Mode",
         value=st.session_state.night_mode
     )
 
-    st.divider()
+    if night_mode != st.session_state.night_mode:
+        st.session_state.night_mode = night_mode
+        st.rerun()
+
+    st.markdown("---")
 
     st.markdown("### 🤖 Model Status")
 
@@ -483,16 +539,28 @@ with st.sidebar:
 
         st.success("Model Loaded")
 
-        st.caption(
-            "Gradient Boosting Regressor"
+        st.markdown(
+            """
+            <div style="
+                background:rgba(34,197,94,0.10);
+                border:1px solid rgba(34,197,94,0.30);
+                border-radius:10px;
+                padding:10px;
+                font-size:13px;
+            ">
+                Gradient Boosting Regressor
+            </div>
+            """,
+            unsafe_allow_html=True
         )
 
     else:
 
-        st.error("Model Not Loaded")
+        st.error("Model Not Found")
 
         st.caption(
-            "Check sales_prediction_final_model.pkl"
+            "Make sure sales_prediction_final_model.pkl "
+            "is available in the repository."
         )
 
 
@@ -503,20 +571,22 @@ with st.sidebar:
 st.html(
     """
     <div class="hero">
+        <div class="hero-content">
 
-        <div class="hero-badge">
-            AI-POWERED SALES ANALYTICS PLATFORM
+            <div class="hero-badge">
+                AI-POWERED SALES ANALYTICS PLATFORM
+            </div>
+
+            <div class="hero-title">
+                SalesAI
+            </div>
+
+            <div class="hero-subtitle">
+                Sales Prediction & Business Decision Support System
+                powered by Machine Learning.
+            </div>
+
         </div>
-
-        <div class="hero-title">
-            SalesAI
-        </div>
-
-        <div class="hero-subtitle">
-            Sales Prediction & Business Decision Support System
-            powered by Machine Learning.
-        </div>
-
     </div>
     """
 )
@@ -537,95 +607,56 @@ if page == "🏠 Dashboard":
         <div class="section-title">
             Sales Intelligence Dashboard
         </div>
+
+        <div class="section-description">
+            Monitor model performance and explore AI-powered
+            sales analytics.
+        </div>
         """
     )
 
     col1, col2, col3, col4 = st.columns(4)
 
     with col1:
-
         st.html(
             """
             <div class="kpi-card">
-
-                <div class="kpi-label">
-                    MODEL R²
-                </div>
-
-                <div class="kpi-value">
-                    94.96%
-                </div>
-
-                <div class="kpi-sub">
-                    Excellent Predictive Performance
-                </div>
-
+                <div class="kpi-label">MODEL R²</div>
+                <div class="kpi-value">94.96%</div>
+                <div class="kpi-sub">Excellent Performance</div>
             </div>
             """
         )
 
     with col2:
-
         st.html(
             """
             <div class="kpi-card">
-
-                <div class="kpi-label">
-                    MAE
-                </div>
-
-                <div class="kpi-value">
-                    150.10
-                </div>
-
-                <div class="kpi-sub">
-                    Mean Absolute Error
-                </div>
-
+                <div class="kpi-label">MAE</div>
+                <div class="kpi-value">150.10</div>
+                <div class="kpi-sub">Low Prediction Error</div>
             </div>
             """
         )
 
     with col3:
-
         st.html(
             """
             <div class="kpi-card">
-
-                <div class="kpi-label">
-                    RMSE
-                </div>
-
-                <div class="kpi-value">
-                    498.65
-                </div>
-
-                <div class="kpi-sub">
-                    Root Mean Square Error
-                </div>
-
+                <div class="kpi-label">RMSE</div>
+                <div class="kpi-value">498.65</div>
+                <div class="kpi-sub">Strong Accuracy</div>
             </div>
             """
         )
 
     with col4:
-
         st.html(
             """
             <div class="kpi-card">
-
-                <div class="kpi-label">
-                    BEST MODEL
-                </div>
-
-                <div class="kpi-value">
-                    GBR
-                </div>
-
-                <div class="kpi-sub">
-                    Gradient Boosting
-                </div>
-
+                <div class="kpi-label">BEST MODEL</div>
+                <div class="kpi-value">GBR</div>
+                <div class="kpi-sub">Gradient Boosting</div>
             </div>
             """
         )
@@ -635,70 +666,43 @@ if page == "🏠 Dashboard":
     col1, col2, col3 = st.columns(3)
 
     with col1:
-
         st.html(
             """
             <div class="info-card">
-
-                <div class="info-icon">
-                    🔮
-                </div>
-
-                <div class="info-title">
-                    Predict Sales
-                </div>
-
+                <div class="info-icon">🔮</div>
+                <div class="info-title">Predict Sales</div>
                 <div class="info-text">
-                    Enter order and product information
-                    to generate an AI-powered sales prediction.
+                    Enter order and product details to generate
+                    AI-powered sales predictions.
                 </div>
-
             </div>
             """
         )
 
     with col2:
-
         st.html(
             """
             <div class="info-card">
-
-                <div class="info-icon">
-                    💡
-                </div>
-
-                <div class="info-title">
-                    Business Insights
-                </div>
-
+                <div class="info-icon">💡</div>
+                <div class="info-title">Business Insights</div>
                 <div class="info-text">
-                    Explore product, region, profit and
-                    seasonal business patterns.
+                    Discover profitable products, regions and
+                    important sales patterns.
                 </div>
-
             </div>
             """
         )
 
     with col3:
-
         st.html(
             """
             <div class="info-card">
-
-                <div class="info-icon">
-                    📊
-                </div>
-
-                <div class="info-title">
-                    Power BI Analytics
-                </div>
-
+                <div class="info-icon">📊</div>
+                <div class="info-title">Power BI Analytics</div>
                 <div class="info-text">
-                    Explore interactive business dashboards
-                    and visual analytics.
+                    Explore interactive dashboards for deeper
+                    business analysis.
                 </div>
-
             </div>
             """
         )
@@ -717,13 +721,13 @@ elif page == "🔮 Sales Prediction":
         </div>
 
         <div class="section-title">
-            🔮 Sales Prediction
+            Sales Prediction
         </div>
 
-        <p>
-            Enter order, product and customer information
-            to estimate expected sales.
-        </p>
+        <div class="section-description">
+            Enter the order details below and let the trained
+            Gradient Boosting model estimate expected sales.
+        </div>
         """
     )
 
@@ -731,12 +735,12 @@ elif page == "🔮 Sales Prediction":
 
         st.error(
             "Model could not be loaded. "
-            "Please upload sales_prediction_final_model.pkl."
+            "Please check sales_prediction_final_model.pkl."
         )
 
     else:
 
-        st.markdown("### 💰 Order Information")
+        st.markdown("### 🧾 Order Information")
 
         col1, col2, col3, col4 = st.columns(4)
 
@@ -772,41 +776,36 @@ elif page == "🔮 Sales Prediction":
             freight_expenses = st.number_input(
                 "Freight Expenses",
                 min_value=0.0,
-                value=10.0,
+                value=20.0,
                 step=1.0
             )
 
         st.markdown("### 📅 Order Date")
 
-        order_date = st.date_input(
-            "Select Order Date",
-            value=date.today()
-        )
+        col1, col2 = st.columns(2)
 
-        order_year = order_date.year
-        order_month = order_date.month
+        with col1:
 
-        if order_month in [1, 2, 3]:
+            order_date = st.date_input(
+                "Order Date",
+                value=date.today()
+            )
 
-            order_quarter = 1
+        with col2:
 
-        elif order_month in [4, 5, 6]:
+            order_year = order_date.year
+            order_month = order_date.month
+            order_quarter = ((order_month - 1) // 3) + 1
+            order_day = order_date.day
+            order_dayofweek = order_date.weekday()
 
-            order_quarter = 2
+            st.info(
+                f"Year: {order_year}  |  "
+                f"Month: {order_month}  |  "
+                f"Quarter: Q{order_quarter}"
+            )
 
-        elif order_month in [7, 8, 9]:
-
-            order_quarter = 3
-
-        else:
-
-            order_quarter = 4
-
-        order_day = order_date.day
-
-        order_dayofweek = order_date.weekday()
-
-        st.markdown("### 📦 Order Details")
+        st.markdown("### 🚚 Order Details")
 
         col1, col2, col3 = st.columns(3)
 
@@ -844,9 +843,9 @@ elif page == "🔮 Sales Prediction":
                 ]
             )
 
-        st.markdown("### 🛒 Product Information")
+        st.markdown("### 📦 Product Information")
 
-        col1, col2, col3 = st.columns(3)
+        col1, col2 = st.columns(2)
 
         with col1:
 
@@ -882,7 +881,9 @@ elif page == "🔮 Sales Prediction":
                 ]
             )
 
-        with col3:
+        col1, col2 = st.columns(2)
+
+        with col1:
 
             product_container = st.selectbox(
                 "Product Container",
@@ -897,11 +898,7 @@ elif page == "🔮 Sales Prediction":
                 ]
             )
 
-        st.markdown("### 📍 Location")
-
-        col1, col2 = st.columns(2)
-
-        with col1:
+        with col2:
 
             state = st.selectbox(
                 "State",
@@ -937,17 +934,17 @@ elif page == "🔮 Sales Prediction":
                 ]
             )
 
-        with col2:
+        st.markdown("### 🌎 Region")
 
-            region = st.selectbox(
-                "Region",
-                [
-                    "North",
-                    "South",
-                    "East",
-                    "West"
-                ]
-            )
+        region = st.selectbox(
+            "Region",
+            [
+                "North",
+                "South",
+                "East",
+                "West"
+            ]
+        )
 
         st.markdown("")
 
@@ -958,8 +955,9 @@ elif page == "🔮 Sales Prediction":
 
         if predict_button:
 
-            input_data = pd.DataFrame(
-                {
+            try:
+
+                input_data = pd.DataFrame({
                     "Unit Price": [unit_price],
                     "QtyOrdered": [qty_ordered],
                     "Discount offered": [discount],
@@ -977,94 +975,78 @@ elif page == "🔮 Sales Prediction":
                     "Product Container": [product_container],
                     "State": [state],
                     "Region": [region]
-                }
-            )
-
-            try:
+                })
 
                 prediction = model.predict(input_data)[0]
 
                 st.session_state.last_prediction = prediction
 
-                st.success(
-                    "Prediction generated successfully!"
-                )
+                st.success("Sales prediction generated successfully!")
 
-                st.markdown("### 🎯 Predicted Sales")
+                st.markdown("## 📈 Prediction Result")
 
-                col1, col2, col3 = st.columns(3)
+                result_col1, result_col2 = st.columns(2)
 
-                with col1:
+                with result_col1:
 
                     st.metric(
                         "Predicted Sales",
                         f"{prediction:,.2f}"
                     )
 
-                if prediction < 500:
+                with result_col2:
 
-                    category = "Low Sales 📉"
+                    if prediction < 500:
 
-                elif prediction < 2000:
+                        category = "Low Sales 📉"
 
-                    category = "Medium Sales 📊"
+                    elif prediction < 2000:
 
-                else:
+                        category = "Medium Sales 📊"
 
-                    category = "High Sales 🚀"
+                    else:
 
-                with col2:
+                        category = "High Sales 🚀"
 
                     st.metric(
                         "Sales Category",
                         category
                     )
 
-                with col3:
-
-                    st.metric(
-                        "Model",
-                        "Gradient Boosting"
-                    )
-
-                st.markdown("### 💡 Recommendation")
+                st.markdown("### 💡 Business Recommendation")
 
                 if prediction < 500:
 
                     st.warning(
                         "Expected sales are relatively low. "
-                        "Consider improving pricing, promotion, "
-                        "product positioning or order quantity."
+                        "Consider reviewing pricing, discount strategy, "
+                        "product demand and promotion."
                     )
 
                 elif prediction < 2000:
 
                     st.info(
                         "Expected sales are moderate. "
-                        "Maintain competitive pricing and "
-                        "optimize inventory availability."
+                        "Maintain balanced inventory and monitor "
+                        "customer demand."
                     )
 
                 else:
 
                     st.success(
                         "Expected sales are high. "
-                        "Ensure sufficient inventory, "
-                        "logistics capacity and customer support."
-                    )
-
-                with st.expander("🔎 View Input Data"):
-
-                    st.dataframe(
-                        input_data,
-                        use_container_width=True
+                        "Consider maintaining sufficient inventory "
+                        "and prioritizing this order."
                     )
 
             except Exception as e:
 
                 st.error(
-                    f"Prediction failed: {e}"
+                    "Prediction failed. Please check the input "
+                    "values and model compatibility."
                 )
+
+                st.exception(e)
 
 
 # =========================================================
@@ -1080,12 +1062,12 @@ elif page == "💡 Business Insights":
         </div>
 
         <div class="section-title">
-            💡 Business Insights
+            Business Insights
         </div>
 
-        <p>
+        <div class="section-description">
             Key findings and recommendations from the sales dataset.
-        </p>
+        </div>
         """
     )
 
@@ -1097,17 +1079,16 @@ elif page == "💡 Business Insights":
             """
             <div class="info-card">
 
-                <div class="info-icon">
-                    🍍
-                </div>
+                <div class="info-icon">🍍</div>
 
                 <div class="info-title">
                     Highest Sales Product
                 </div>
 
                 <div class="info-text">
-                    Sliced Pineapple recorded the highest
-                    total sales in the analyzed dataset.
+                    Sliced Pineapple recorded the highest total sales.
+                    This indicates strong demand and potential for
+                    inventory prioritization.
                 </div>
 
             </div>
@@ -1120,24 +1101,20 @@ elif page == "💡 Business Insights":
             """
             <div class="info-card">
 
-                <div class="info-icon">
-                    💰
-                </div>
+                <div class="info-icon">💰</div>
 
                 <div class="info-title">
                     Highest Profit Product
                 </div>
 
                 <div class="info-text">
-                    Quail Eggs generated the highest
-                    total profit among analyzed products.
+                    Quail Eggs recorded the highest total profit,
+                    making it an important product for profitability.
                 </div>
 
             </div>
             """
         )
-
-    st.markdown("")
 
     col1, col2 = st.columns(2)
 
@@ -1147,17 +1124,15 @@ elif page == "💡 Business Insights":
             """
             <div class="info-card">
 
-                <div class="info-icon">
-                    🗺️
-                </div>
+                <div class="info-icon">🌎</div>
 
                 <div class="info-title">
                     Strongest Region
                 </div>
 
                 <div class="info-text">
-                    The North region showed strong overall
-                    sales performance.
+                    North region shows strong sales performance
+                    compared with other regions.
                 </div>
 
             </div>
@@ -1170,38 +1145,36 @@ elif page == "💡 Business Insights":
             """
             <div class="info-card">
 
-                <div class="info-icon">
-                    📅
-                </div>
+                <div class="info-icon">📅</div>
 
                 <div class="info-title">
                     Peak Sales Month
                 </div>
 
                 <div class="info-text">
-                    November was identified as the strongest
-                    sales month in the analysis.
+                    November recorded the highest sales activity.
+                    Inventory planning should consider seasonal demand.
                 </div>
 
             </div>
             """
         )
 
-    st.markdown("### 📌 Business Recommendations")
+    st.markdown("### 🎯 Strategic Recommendations")
 
     recommendations = [
-        "Focus inventory planning on high-performing products.",
-        "Monitor products with negative or low profitability.",
-        "Analyze Haryana profitability carefully.",
-        "Use regional sales patterns for targeted strategies.",
+        "Prioritize inventory for high-performing products.",
+        "Review products such as Jams and Tuna where profitability is weak.",
+        "Analyze negative profitability patterns in Haryana.",
+        "Use regional sales patterns for targeted marketing.",
         "Prepare additional inventory before November.",
-        "Use ML-based sales prediction to support inventory and planning decisions."
+        "Use the ML prediction system to support sales planning."
     ]
 
-    for recommendation in recommendations:
+    for item in recommendations:
 
-        st.write(
-            f"• {recommendation}"
+        st.markdown(
+            f"• {item}"
         )
 
 
@@ -1218,18 +1191,15 @@ elif page == "🤖 About Model":
         </div>
 
         <div class="section-title">
-            🤖 About SalesAI Model
+            About the Model
         </div>
 
-        <p>
-            SalesAI uses a Gradient Boosting Regressor
-            to predict sales based on historical order,
-            product and geographical information.
-        </p>
+        <div class="section-description">
+            Performance, comparison and explainability of the
+            trained sales prediction model.
+        </div>
         """
     )
-
-    st.markdown("### 📈 Model Performance")
 
     col1, col2, col3 = st.columns(3)
 
@@ -1254,24 +1224,22 @@ elif page == "🤖 About Model":
             "498.65"
         )
 
-    st.markdown("### 🏆 Selected Model")
+    st.markdown("### 🧠 Selected Model")
 
     st.html(
         """
         <div class="info-card">
 
-            <div class="info-icon">
-                🚀
-            </div>
+            <div class="info-icon">🤖</div>
 
             <div class="info-title">
                 Gradient Boosting Regressor
             </div>
 
             <div class="info-text">
-                Gradient Boosting achieved the best
-                predictive performance among the tested
-                regression algorithms.
+                Gradient Boosting Regressor was selected as the final
+                model because it achieved the highest R² score and
+                lowest prediction error among the tested models.
             </div>
 
         </div>
@@ -1280,41 +1248,38 @@ elif page == "🤖 About Model":
 
     st.markdown("### 📊 Model Comparison")
 
-    comparison_df = pd.DataFrame(
-        {
-            "Model": [
-                "Linear Regression",
-                "Decision Tree",
-                "Random Forest",
-                "Gradient Boosting"
-            ],
-            "MAE": [
-                884.79,
-                268.96,
-                189.51,
-                150.10
-            ],
-            "RMSE": [
-                1612.60,
-                1241.98,
-                783.40,
-                498.65
-            ],
-            "R² Score": [
-                0.4729,
-                0.6874,
-                0.8756,
-                0.9496
-            ]
-        }
-    )
+    comparison_df = pd.DataFrame({
+        "Model": [
+            "Gradient Boosting",
+            "Random Forest",
+            "Decision Tree",
+            "Linear Regression"
+        ],
+        "MAE": [
+            150.10,
+            189.51,
+            268.96,
+            884.79
+        ],
+        "RMSE": [
+            498.65,
+            783.40,
+            1241.98,
+            1612.60
+        ],
+        "R²": [
+            0.9496,
+            0.8756,
+            0.6874,
+            0.4729
+        ]
+    })
 
     st.dataframe(
         comparison_df,
         use_container_width=True,
         hide_index=True
     )
-
 
     # =====================================================
     # ACTUAL FEATURE IMPORTANCE
@@ -1331,9 +1296,8 @@ elif page == "🤖 About Model":
         </div>
 
         <p>
-            The chart below shows the relative importance
-            of features used by the trained Gradient Boosting
-            model.
+            The chart below shows the relative importance of the
+            features used by the trained Gradient Boosting model.
         </p>
         """
     )
@@ -1353,12 +1317,10 @@ elif page == "🤖 About Model":
             estimator.feature_importances_
         )
 
-        feature_importance = pd.DataFrame(
-            {
-                "Feature": feature_names,
-                "Importance": importance_values
-            }
-        )
+        feature_importance = pd.DataFrame({
+            "Feature": feature_names,
+            "Importance": importance_values
+        })
 
         feature_importance["Feature"] = (
             feature_importance["Feature"]
@@ -1389,10 +1351,9 @@ elif page == "🤖 About Model":
             .set_index("Feature")
         )
 
+        # VERTICAL FEATURE IMPORTANCE CHART
         st.bar_chart(
             chart_data,
-            y="Importance",
-            horizontal=True,
             height=600
         )
 
@@ -1401,13 +1362,11 @@ elif page == "🤖 About Model":
             "to the Gradient Boosting model."
         )
 
-        with st.expander("📋 View Feature Importance Values"):
-
-            st.dataframe(
-                feature_importance,
-                use_container_width=True,
-                hide_index=True
-            )
+        st.dataframe(
+            feature_importance,
+            use_container_width=True,
+            hide_index=True
+        )
 
     except Exception as e:
 
@@ -1415,55 +1374,48 @@ elif page == "🤖 About Model":
             f"Feature importance could not be loaded: {e}"
         )
 
-
-    # =====================================================
-    # PREDICTION INPUTS
-    # =====================================================
-
     st.markdown("### 🧾 Prediction Inputs")
 
-    prediction_inputs = pd.DataFrame(
-        {
-            "Feature": [
-                "Unit Price",
-                "QtyOrdered",
-                "Discount offered",
-                "Freight Expenses",
-                "Order Year",
-                "Order Month",
-                "Order Quarter",
-                "Order Day",
-                "Order DayOfWeek",
-                "Order Priority",
-                "Freight Mode",
-                "Segment",
-                "Product Type",
-                "Product Sub-Category",
-                "Product Container",
-                "State",
-                "Region"
-            ],
-            "Type": [
-                "Numerical",
-                "Numerical",
-                "Numerical",
-                "Numerical",
-                "Numerical",
-                "Numerical",
-                "Numerical",
-                "Numerical",
-                "Numerical",
-                "Categorical",
-                "Categorical",
-                "Categorical",
-                "Categorical",
-                "Categorical",
-                "Categorical",
-                "Categorical",
-                "Categorical"
-            ]
-        }
-    )
+    prediction_inputs = pd.DataFrame({
+        "Feature": [
+            "Unit Price",
+            "QtyOrdered",
+            "Discount offered",
+            "Freight Expenses",
+            "Order Year",
+            "Order Month",
+            "Order Quarter",
+            "Order Day",
+            "Order DayOfWeek",
+            "Order Priority",
+            "Freight Mode",
+            "Segment",
+            "Product Type",
+            "Product Sub-Category",
+            "Product Container",
+            "State",
+            "Region"
+        ],
+        "Type": [
+            "Numerical",
+            "Numerical",
+            "Numerical",
+            "Numerical",
+            "Numerical",
+            "Numerical",
+            "Numerical",
+            "Numerical",
+            "Numerical",
+            "Categorical",
+            "Categorical",
+            "Categorical",
+            "Categorical",
+            "Categorical",
+            "Categorical",
+            "Categorical",
+            "Categorical"
+        ]
+    })
 
     st.dataframe(
         prediction_inputs,
@@ -1485,96 +1437,66 @@ elif page == "🗄️ SQL Analysis":
         </div>
 
         <div class="section-title">
-            🗄️ SQL Analysis
+            SQL Analysis
         </div>
 
-        <p>
-            Explore sales data stored in the SQLite database.
-        </p>
+        <div class="section-description">
+            Explore sales data using SQLite queries.
+        </div>
         """
     )
 
-    possible_databases = [
-        "sales.db",
-        "sales_database.db",
-        "retail.db",
-        "sales_ai.db"
-    ]
+    db_path = "sales_data.db"
 
-    existing_database = None
-
-    for database in possible_databases:
-
-        if os.path.exists(database):
-
-            existing_database = database
-            break
-
-    if existing_database is None:
-
-        st.warning(
-            "No SQLite database found. "
-            "Upload your database file to the repository."
-        )
-
-    else:
-
-        st.success(
-            f"Database found: {existing_database}"
-        )
+    if os.path.exists(db_path):
 
         try:
 
-            conn = sqlite3.connect(
-                existing_database
-            )
+            conn = sqlite3.connect(db_path)
+
+            table_query = """
+            SELECT name
+            FROM sqlite_master
+            WHERE type='table'
+            """
 
             tables = pd.read_sql_query(
-                """
-                SELECT name
-                FROM sqlite_master
-                WHERE type='table'
-                ORDER BY name
-                """,
+                table_query,
                 conn
             )
 
-            if tables.empty:
+            if not tables.empty:
 
-                st.warning(
-                    "No tables found in the database."
+                st.success(
+                    "SQLite database connected successfully."
                 )
-
-            else:
-
-                table_names = tables["name"].tolist()
 
                 selected_table = st.selectbox(
                     "Select Table",
-                    table_names
+                    tables["name"].tolist()
                 )
 
-                query = (
-                    f'SELECT * FROM "{selected_table}" LIMIT 100'
-                )
+                query = f"""
+                SELECT *
+                FROM "{selected_table}"
+                LIMIT 100
+                """
 
-                data = pd.read_sql_query(
+                result = pd.read_sql_query(
                     query,
                     conn
                 )
 
-                st.markdown(
-                    f"### 📋 {selected_table}"
-                )
-
                 st.dataframe(
-                    data,
+                    result,
                     use_container_width=True,
                     hide_index=True
                 )
 
-                st.caption(
-                    f"Showing first {len(data)} rows."
+            else:
+
+                st.warning(
+                    "No tables found in the database."
                 )
 
             conn.close()
@@ -1585,9 +1507,16 @@ elif page == "🗄️ SQL Analysis":
                 f"Database error: {e}"
             )
 
+    else:
+
+        st.info(
+            "SQLite database file not found. "
+            "Upload sales_data.db to enable SQL analysis."
+        )
+
 
 # =========================================================
-# POWER BI DASHBOARD
+# POWER BI
 # =========================================================
 
 elif page == "📊 Power BI Dashboard":
@@ -1595,31 +1524,56 @@ elif page == "📊 Power BI Dashboard":
     st.html(
         """
         <div class="section-kicker">
-            BUSINESS VISUALIZATION
+            BUSINESS INTELLIGENCE
         </div>
 
         <div class="section-title">
-            📊 Power BI Dashboard
+            Power BI Dashboard
         </div>
 
-        <p>
-            Interactive Power BI dashboard for sales
-            and business performance analysis.
-        </p>
+        <div class="section-description">
+            Interactive Power BI dashboard for detailed sales analysis.
+        </div>
         """
     )
 
-    powerbi_url = (
-        "https://app.powerbi.com/view?"
-        "r=eyJrIjoiNzUwZDI1NjYtZjQ2Zi00M2FmLWE1MDQtYjFlNWQ3ODAwZTUx"
-        "IiwidCI6IjcwMzY2YzAyLTkwOTUtNDMwOS04MDFhLTQ1MzUyOTUwYzg0MiJ9"
+    st.info(
+        "Paste your Power BI Publish-to-Web embed URL below."
     )
 
-    st.components.v1.iframe(
-        powerbi_url,
-        height=750,
-        scrolling=True
+    powerbi_url = st.text_input(
+        "Power BI Dashboard URL",
+        placeholder="https://app.powerbi.com/view?r=..."
     )
+
+    if powerbi_url:
+
+        st.components.v1.iframe(
+            powerbi_url,
+            height=700,
+            scrolling=True
+        )
+
+    else:
+
+        st.html(
+            """
+            <div class="info-card">
+
+                <div class="info-icon">📊</div>
+
+                <div class="info-title">
+                    Power BI Dashboard
+                </div>
+
+                <div class="info-text">
+                    Add your Power BI Publish-to-Web link above
+                    to display the interactive dashboard here.
+                </div>
+
+            </div>
+            """
+        )
 
 
 # =========================================================
@@ -1629,14 +1583,9 @@ elif page == "📊 Power BI Dashboard":
 st.html(
     """
     <div class="footer">
-
-        <strong>SalesAI</strong>
-        — AI-Powered Sales Prediction & Business Decision Support System
-
-        <br><br>
-
-        Built with Python • Streamlit • Machine Learning • SQL • Power BI
-
+        SalesAI • Sales Prediction & Business Decision Support System
+        <br>
+        Powered by Machine Learning, Python, SQL & Power BI
     </div>
     """
 )
