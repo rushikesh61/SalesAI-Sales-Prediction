@@ -1155,23 +1155,9 @@ elif page == "🗄️ SQL Analysis":
 
     conn = get_connection()
 
-    # Check database connection and table
-try:
-    tables = pd.read_sql_query(
-        "SELECT name FROM sqlite_master WHERE type='table';",
-        conn
-    )
+    
 
-    if "retail" not in tables["name"].tolist():
-        st.error("❌ 'retail' table not found in retail.db")
-        st.write("Available tables:", tables)
-        st.stop()
-
-except Exception as e:
-    st.error(f"❌ Database Error: {e}")
-    st.stop()
-
-
+ 
     # -----------------------------------------------------
     # KPI ANALYSIS
     # -----------------------------------------------------
