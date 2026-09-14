@@ -1139,13 +1139,334 @@ elif page == "🗄️ SQL Analysis":
             color:{MUTED};
             margin-top:7px;
         ">
-            Business analysis performed using SQL queries.
+            Business analysis performed using SQLite and SQL queries.
         </div>
     </div>
     """)
 
-    st.info("SQL analysis module will be connected to the sales database.")
+    # -----------------------------------------------------
+    # DATABASE CONNECTION
+    # -----------------------------------------------------
 
+    @st.cache_resource
+    def get_connection():
+        return sqlite3.connect("retail.db", check_same_thread=False)
+
+    conn = get_connection()
+
+    # -----------------------------------------------------
+    # KPI ANALYSIS
+    # -----------------------------------------------------
+
+    st.subheader("📊 SQL Business KPIs")
+
+    kpi_query = """
+    SELECT
+        ROUND(SUM(Sales), 2) AS Total_Sales,
+        ROUND(SUM(Profit), 2) AS Total_Profit,
+        COUNT(*) AS Total_Orders,
+        ROUND(AVG(Sales), 2) AS Average_Order_Value,
+        ROUND((SUM(Profit) / SUM(Sales)) * 100, 2) AS Profit_Margin
+    FROM retail
+    """
+
+    kpi = pd.read_sql_query(kpi_query, conn)
+
+    c1, c2, c3, c4, c5 = st.columns(5)
+
+    with c1:
+        st.metric(
+            "Total Sales",
+            f"₹{kpi.loc[0, 'Total_Sales']:,.2f}"
+        )
+
+    with c2:
+        st.metric(
+            "Total Profit",
+            f"₹{kpi.loc[0, 'Total_Profit']:,.2f}"
+        )
+
+    with c3:
+        st.metric(
+            "Total Orders",
+            f"{int(kpi.loc[0, 'Total_Orders']):,}"
+        )
+
+    with c4:
+        st.metric(
+            "Average Order Value",
+            f"₹{kpi.loc[0, 'Average_Order_Value']:,.2f}"
+        )
+
+    with c5:
+        st.metric(
+            "Profit Margin",
+            f"{kpi.loc[0, 'Profit_Margin']:.2f}%"
+        )
+
+    st.markdown("")
+
+    # -----------------------------------------------------
+    # PRODUCT TYPE
+    # -----------------------------------------------------
+
+    st.subheader("📦 Product Type Analysis")
+
+    product_type_query = """
+    SELECT
+        [Product Type],
+        ROUND(SUM(Sales), 2) AS Total_Sales,
+        ROUND(SUM(Profit), 2) AS Total_Profit,
+        COUNT(*) AS Total_Orders,
+        ROUND(
+            (SUM(Profit) / SUM(Sales)) * 100,
+            2
+        ) AS Profit_Margin
+    FROM retail
+    GROUP BY [Product Type]
+    ORDER BY Total_Sales DESC
+    """
+
+    product_type_sql = pd.read_sql_query(
+        product_type_query,
+        conn
+    )
+
+    st.dataframe(
+        product_type_sql,
+        use_container_width=True,
+        hide_index=True
+    )
+
+    # -----------------------------------------------------
+    # SUB-CATEGORY
+    # -----------------------------------------------------
+
+    st.subheader("🏷️ Product Sub-Category Analysis")
+
+    subcategory_query = """
+    SELECT
+        [Product Sub-Category],
+        ROUND(SUM(Sales), 2) AS Total_Sales,
+        ROUND(SUM(Profit), 2) AS Total_Profit,
+        COUNT(*) AS Total_Orders,
+        ROUND(
+            (SUM(Profit) / SUM(Sales)) * 100,
+            2
+        ) AS Profit_Margin
+    FROM retail
+    GROUP BY [Product Sub-Category]
+    ORDER BY Total_Sales DESC
+    """
+
+    subcategory_sql = pd.read_sql_query(
+        subcategory_query,
+        conn
+    )
+
+    st.dataframe(
+        subcategory_sql,
+        use_container_width=True,
+        hide_index=True
+    )
+
+    # -----------------------------------------------------
+    # REGION
+    # -----------------------------------------------------
+
+    st.subheader("🌍 Region Analysis")
+
+    region_query = """
+    SELECT
+        Region,
+        ROUND(SUM(Sales), 2) AS Total_Sales,
+        ROUND(SUM(Profit), 2) AS Total_Profit,
+        COUNT(*) AS Total_Orders,
+        ROUND(
+            (SUM(Profit) / SUM(Sales)) * 100,
+            2
+        ) AS Profit_Margin
+    FROM retail
+    GROUP BY Region
+    ORDER BY Total_Sales DESC
+    """
+
+    region_sql = pd.read_sql_query(
+        region_query,
+        conn
+    )
+
+    st.dataframe(
+        region_sql,
+        use_container_width=True,
+        hide_index=True
+    )
+
+    # -----------------------------------------------------
+    # STATE
+    # -----------------------------------------------------
+
+    st.subheader("📍 State Analysis")
+
+    state_query = """
+    SELECT
+        State,
+        ROUND(SUM(Sales), 2) AS Total_Sales,
+        ROUND(SUM(Profit), 2) AS Total_Profit,
+        COUNT(*) AS Total_Orders,
+        ROUND(
+            (SUM(Profit) / SUM(Sales)) * 100,
+            2
+        ) AS Profit_Margin
+    FROM retail
+    GROUP BY State
+    ORDER BY Total_Sales DESC
+    """
+
+    state_sql = pd.read_sql_query(
+        state_query,
+        conn
+    )
+
+    st.dataframe(
+        state_sql,
+        use_container_width=True,
+        hide_index=True
+    )
+
+    # -----------------------------------------------------
+    # SEGMENT
+    # -----------------------------------------------------
+
+    st.subheader("👥 Customer Segment Analysis")
+
+    segment_query = """
+    SELECT
+        Segment,
+        ROUND(SUM(Sales), 2) AS Total_Sales,
+        ROUND(SUM(Profit), 2) AS Total_Profit,
+        COUNT(*) AS Total_Orders,
+        ROUND(
+            (SUM(Profit) / SUM(Sales)) * 100,
+            2
+        ) AS Profit_Margin
+    FROM retail
+    GROUP BY Segment
+    ORDER BY Total_Sales DESC
+    """
+
+    segment_sql = pd.read_sql_query(
+        segment_query,
+        conn
+    )
+
+    st.dataframe(
+        segment_sql,
+        use_container_width=True,
+        hide_index=True
+    )
+
+    # -----------------------------------------------------
+    # MONTHLY SALES
+    # -----------------------------------------------------
+
+    st.subheader("📅 Monthly Sales Analysis")
+
+    monthly_query = """
+    SELECT
+        strftime('%Y-%m', [Order Date]) AS Month,
+        ROUND(SUM(Sales), 2) AS Total_Sales,
+        ROUND(SUM(Profit), 2) AS Total_Profit,
+        COUNT(*) AS Total_Orders
+    FROM retail
+    GROUP BY Month
+    ORDER BY Month
+    """
+
+    monthly_sql = pd.read_sql_query(
+        monthly_query,
+        conn
+    )
+
+    st.dataframe(
+        monthly_sql,
+        use_container_width=True,
+        hide_index=True
+    )
+
+    st.line_chart(
+        monthly_sql.set_index("Month")["Total_Sales"]
+    )
+
+    # -----------------------------------------------------
+    # TOP 10 PRODUCTS
+    # -----------------------------------------------------
+
+    st.subheader("🏆 Top 10 Products by Sales")
+
+    top_products_query = """
+    SELECT
+        [Product Sub-Category],
+        ROUND(SUM(Sales), 2) AS Total_Sales,
+        ROUND(SUM(Profit), 2) AS Total_Profit,
+        COUNT(*) AS Total_Orders
+    FROM retail
+    GROUP BY [Product Sub-Category]
+    ORDER BY Total_Sales DESC
+    LIMIT 10
+    """
+
+    top_products_sql = pd.read_sql_query(
+        top_products_query,
+        conn
+    )
+
+    st.dataframe(
+        top_products_sql,
+        use_container_width=True,
+        hide_index=True
+    )
+
+    # -----------------------------------------------------
+    # LOSS MAKING PRODUCTS
+    # -----------------------------------------------------
+
+    st.subheader("⚠️ Loss-Making Products")
+
+    loss_query = """
+    SELECT
+        [Product Sub-Category],
+        ROUND(SUM(Sales), 2) AS Total_Sales,
+        ROUND(SUM(Profit), 2) AS Total_Profit,
+        COUNT(*) AS Total_Orders
+    FROM retail
+    GROUP BY [Product Sub-Category]
+    HAVING SUM(Profit) < 0
+    ORDER BY Total_Profit ASC
+    """
+
+    loss_sql = pd.read_sql_query(
+        loss_query,
+        conn
+    )
+
+    st.dataframe(
+        loss_sql,
+        use_container_width=True,
+        hide_index=True
+    )
+
+    # -----------------------------------------------------
+    # SQL SUMMARY
+    # -----------------------------------------------------
+
+    st.success(
+        "SQL Analysis successfully loaded from SQLite database."
+    )
+
+    st.caption(
+        "Database: retail.db  |  Table: retail  |  Analysis: SQLite SQL"
+    )
 # =========================================================
 # POWER BI DASHBOARD
 # =========================================================
