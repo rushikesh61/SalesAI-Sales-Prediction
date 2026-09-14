@@ -4,6 +4,7 @@ import joblib
 import sqlite3
 from datetime import date
 import os
+from io import BytesIO
 
 # =========================================================
 # PAGE CONFIG
@@ -391,6 +392,46 @@ div[data-baseweb="calendar"] * {{
 
     box-shadow:
         0 0 0 4px rgba(56,189,248,0.20);
+}}
+
+/* =====================================================
+   DOWNLOAD BUTTON
+   ===================================================== */
+
+.stDownloadButton > button {{
+    width: 100%;
+    min-height: 50px;
+    border-radius: 14px;
+    border: 1px solid #38BDF8;
+    padding: 13px 20px;
+    font-size: 15px;
+    font-weight: 800;
+    color: #FFFFFF !important;
+
+    background:
+        linear-gradient(
+            135deg,
+            #0369A1 0%,
+            #1D4ED8 50%,
+            #4338CA 100%
+        ) !important;
+
+    box-shadow:
+        0 7px 22px rgba(37,99,235,0.30);
+
+    transition: all 0.2s ease;
+}}
+
+.stDownloadButton > button p {{
+    color: #FFFFFF !important;
+}}
+
+.stDownloadButton > button:hover {{
+    color: #FFFFFF !important;
+    border: 1px solid #7DD3FC;
+    transform: translateY(-2px);
+    box-shadow:
+        0 12px 30px rgba(37,99,235,0.45);
 }}
 
 /* =====================================================
@@ -981,7 +1022,25 @@ elif page == "🔮 Sales Prediction":
 
                 st.session_state.last_prediction = prediction
 
-                st.success("Sales prediction generated successfully!")
+                # =================================================
+                # SALES CATEGORY
+                # =================================================
+
+                if prediction < 500:
+
+                    category = "Low Sales 📉"
+
+                elif prediction < 2000:
+
+                    category = "Medium Sales 📊"
+
+                else:
+
+                    category = "High Sales 🚀"
+
+                st.success(
+                    "Sales prediction generated successfully!"
+                )
 
                 st.markdown("## 📈 Prediction Result")
 
@@ -996,22 +1055,151 @@ elif page == "🔮 Sales Prediction":
 
                 with result_col2:
 
-                    if prediction < 500:
-
-                        category = "Low Sales 📉"
-
-                    elif prediction < 2000:
-
-                        category = "Medium Sales 📊"
-
-                    else:
-
-                        category = "High Sales 🚀"
-
                     st.metric(
                         "Sales Category",
                         category
                     )
+
+                # =================================================
+                # DOWNLOAD PREDICTION
+                # =================================================
+
+                st.markdown("---")
+
+                st.markdown("### 📥 Download Prediction")
+
+                # Combine input details + prediction
+                prediction_details = input_data.copy()
+
+                prediction_details["Predicted Sales"] = round(
+                    prediction,
+                    2
+                )
+
+                prediction_details["Sales Category"] = category
+
+                prediction_details["Prediction Date"] = (
+                    date.today().isoformat()
+                )
+
+                # Show complete prediction details
+                st.dataframe(
+                    prediction_details,
+                    use_container_width=True,
+                    hide_index=True
+                )
+
+                download_col1, download_col2 = st.columns(2)
+
+                # =================================================
+                # CSV DOWNLOAD
+                # =================================================
+
+                with download_col1:
+
+                    csv_data = (
+                        prediction_details
+                        .to_csv(index=False)
+                        .encode("utf-8")
+                    )
+
+                    st.download_button(
+                        label="⬇️ Download Prediction CSV",
+                        data=csv_data,
+                        file_name="sales_prediction_result.csv",
+                        mime="text/csv",
+                        use_container_width=True
+                    )
+
+                # =================================================
+                # EXCEL DOWNLOAD
+                # =================================================
+
+                with download_col2:
+
+                    excel_buffer = BytesIO()
+
+                    with pd.ExcelWriter(
+                        excel_buffer,
+                        engine="openpyxl"
+                    ) as writer:
+
+                        prediction_details.to_excel(
+                            writer,
+                            index=False,
+                            sheet_name="Prediction"
+                        )
+
+                        worksheet = writer.sheets["Prediction"]
+
+                        # Header formatting
+                        header_fill = PatternFill(
+                            fill_type="solid",
+                            fgColor="1D4ED8"
+                        )
+
+                        header_font = Font(
+                            color="FFFFFF",
+                            bold=True
+                        )
+
+                        header_alignment = Alignment(
+                            horizontal="center"
+                        )
+
+                        for cell in worksheet[1]:
+
+                            cell.fill = header_fill
+                            cell.font = header_font
+                            cell.alignment = header_alignment
+
+                        # Automatic column width
+                        for column_cells in worksheet.columns:
+
+                            max_length = 0
+
+                            column_letter = (
+                                get_column_letter(
+                                    column_cells[0].column
+                                )
+                            )
+
+                            for cell in column_cells:
+
+                                try:
+
+                                    max_length = max(
+                                        max_length,
+                                        len(str(cell.value))
+                                    )
+
+                                except Exception:
+
+                                    pass
+
+                            worksheet.column_dimensions[
+                                column_letter
+                            ].width = min(
+                                max_length + 3,
+                                35
+                            )
+
+                    excel_buffer.seek(0)
+
+                    st.download_button(
+                        label="📊 Download Prediction Excel",
+                        data=excel_buffer.getvalue(),
+                        file_name="sales_prediction_result.xlsx",
+                        mime=(
+                            "application/vnd.openxmlformats-officedocument."
+                            "spreadsheetml.sheet"
+                        ),
+                        use_container_width=True
+                    )
+
+                # =================================================
+                # BUSINESS RECOMMENDATION
+                # =================================================
 
                 st.markdown("### 💡 Business Recommendation")
 
