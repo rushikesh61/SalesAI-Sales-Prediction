@@ -1,36 +1,31 @@
 import streamlit as st
-import sqlite3
 import pandas as pd
 import joblib
+import sqlite3
 from datetime import date
+import os
 
 # =========================================================
 # PAGE CONFIG
 # =========================================================
 
 st.set_page_config(
-    page_title="SalesAI",
+    page_title="SalesAI | Sales Prediction",
     page_icon="📊",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
 # =========================================================
-# LOAD MODEL
-# =========================================================
-
-@st.cache_resource
-def load_model():
-    return joblib.load("sales_prediction_final_model.pkl")
-
-model = load_model()
-
-# =========================================================
 # SESSION STATE
 # =========================================================
 
 if "night_mode" not in st.session_state:
-    st.session_state.night_mode = False
+    st.session_state.night_mode = True
+
+if "last_prediction" not in st.session_state:
+    st.session_state.last_prediction = None
+
 
 # =========================================================
 # THEME
@@ -38,250 +33,585 @@ if "night_mode" not in st.session_state:
 
 if st.session_state.night_mode:
 
-    BG = "#0b1020"
-    CARD = "#111827"
-    CARD2 = "#172033"
-    TEXT = "#f8fafc"
-    MUTED = "#94a3b8"
-    BORDER = "#263449"
-    HERO_TEXT = "#ffffff"
-    INPUT_BG = "#111827"
+    BG = "#07111F"
+    CARD = "#0D1B2A"
+    CARD_2 = "#10243A"
+    TEXT = "#F8FAFC"
+    MUTED = "#94A3B8"
+    BORDER = "#1E3A5F"
+    INPUT_BG = "#0B1726"
 
 else:
 
-    BG = "#f4f7fb"
-    CARD = "#ffffff"
-    CARD2 = "#f8fafc"
-    TEXT = "#172033"
-    MUTED = "#64748b"
-    BORDER = "#e2e8f0"
-    HERO_TEXT = "#ffffff"
-    INPUT_BG = "#ffffff"
+    BG = "#F4F7FB"
+    CARD = "#FFFFFF"
+    CARD_2 = "#F8FAFC"
+    TEXT = "#0F172A"
+    MUTED = "#64748B"
+    BORDER = "#D9E2EC"
+    INPUT_BG = "#FFFFFF"
 
 
 # =========================================================
-# GLOBAL CSS
+# PROFESSIONAL CSS
 # =========================================================
 
-st.html(f"""
+st.html(
+    f"""
 <style>
-/* ---------- Global ---------- */
-.stApp {{
-    background:
-        radial-gradient(circle at 10% 0%, rgba(37,99,235,0.08), transparent 30%),
-        radial-gradient(circle at 90% 10%, rgba(124,58,237,0.07), transparent 28%),
-        {BG};
-    color: {TEXT};
-}}
 
-.main .block-container {{
-    max-width: 1450px;
-    padding-top: 2rem;
-    padding-bottom: 2rem;
-}}
+    /* ---------------- GLOBAL ---------------- */
 
-section[data-testid="stSidebar"] {{
-    background: linear-gradient(180deg, {CARD} 0%, {CARD2} 100%);
-    border-right: 1px solid {BORDER};
-}}
+    .stApp {{
+        background:
+            radial-gradient(
+                circle at 15% 5%,
+                rgba(37,99,235,0.13),
+                transparent 28%
+            ),
+            radial-gradient(
+                circle at 85% 10%,
+                rgba(6,182,212,0.10),
+                transparent 25%
+            ),
+            {BG};
 
-section[data-testid="stSidebar"] * {{
-    color: {TEXT};
-}}
-
-section[data-testid="stSidebar"] [data-testid="stRadio"] > div {{
-    gap: 7px;
-}}
-
-section[data-testid="stSidebar"] label {{
-    border-radius: 12px;
-    padding: 8px 10px;
-    transition: all .2s ease;
-}}
-
-section[data-testid="stSidebar"] label:hover {{
-    background: rgba(37,99,235,.10);
-}}
-
-h1, h2, h3, h4 {{
-    color: {TEXT};
-    letter-spacing: -0.02em;
-}}
-
-p, label, .stCaption {{
-    color: {MUTED};
-}}
-
-/* ---------- Buttons ---------- */
-.stButton > button {{
-    border-radius: 12px;
-    border: 1px solid rgba(37,99,235,.25);
-    min-height: 46px;
-    font-weight: 800;
-    letter-spacing: .01em;
-    transition: transform .18s ease, box-shadow .18s ease;
-    box-shadow: 0 5px 16px rgba(15,23,42,.08);
-}}
-
-.stButton > button:hover {{
-    transform: translateY(-2px);
-    box-shadow: 0 10px 24px rgba(37,99,235,.18);
-}}
-
-/* ---------- Inputs ---------- */
-div[data-baseweb="select"] > div,
-div[data-testid="stNumberInput"] > div,
-div[data-testid="stDateInput"] > div {{
-    border-radius: 11px;
-}}
-
-div[data-testid="stNumberInput"] input,
-div[data-baseweb="select"] input {{
-    color: {TEXT};
-}}
-
-/* ---------- Metrics ---------- */
-div[data-testid="stMetric"] {{
-    background: linear-gradient(145deg, {CARD}, {CARD2});
-    border: 1px solid {BORDER};
-    border-radius: 16px;
-    padding: 17px 18px;
-    box-shadow: 0 8px 25px rgba(15,23,42,.06);
-}}
-
-div[data-testid="stMetric"] label {{
-    color: {MUTED};
-}}
-
-div[data-testid="stMetricValue"] {{
-    color: {TEXT};
-    font-weight: 850;
-}}
-
-/* ---------- Dataframe / tables ---------- */
-div[data-testid="stDataFrame"] {{
-    border: 1px solid {BORDER};
-    border-radius: 14px;
-    overflow: hidden;
-}}
-
-/* ---------- Alerts ---------- */
-div[data-testid="stAlert"] {{
-    border-radius: 13px;
-}}
-
-/* ---------- Hero ---------- */
-.salesai-hero {{
-    position: relative;
-    overflow: hidden;
-    background: linear-gradient(135deg,#0f3b8f 0%,#2563eb 42%,#7c3aed 100%);
-    border-radius: 26px;
-    padding: 42px 44px;
-    margin: 0 0 28px 0;
-    box-shadow: 0 20px 55px rgba(37,99,235,.22);
-}}
-
-.salesai-hero::after {{
-    content: "";
-    position: absolute;
-    width: 240px;
-    height: 240px;
-    right: -70px;
-    top: -90px;
-    border-radius: 50%;
-    background: rgba(255,255,255,.10);
-}}
-
-.salesai-hero-title {{
-    font-size: clamp(32px,4vw,48px);
-    font-weight: 900;
-    color: #fff !important;
-    line-height: 1.05;
-}}
-
-.salesai-hero-subtitle {{
-    font-size: 18px;
-    font-weight: 600;
-    color: rgba(255,255,255,.90) !important;
-    margin-top: 10px;
-}}
-
-.salesai-pill {{
-    display: inline-block;
-    margin-top: 18px;
-    padding: 8px 15px;
-    border-radius: 999px;
-    color: #fff !important;
-    background: rgba(255,255,255,.14);
-    border: 1px solid rgba(255,255,255,.22);
-    font-size: 13px;
-    font-weight: 700;
-}}
-
-/* ---------- Cards ---------- */
-.ai-card {{
-    background: linear-gradient(145deg,{CARD},{CARD2});
-    border: 1px solid {BORDER};
-    border-radius: 18px;
-    padding: 23px;
-    box-shadow: 0 8px 25px rgba(15,23,42,.055);
-    height: 100%;
-}}
-
-.ai-card:hover {{
-    border-color: rgba(37,99,235,.30);
-}}
-
-.section-label {{
-    display: flex;
-    align-items: center;
-    gap: 9px;
-    font-size: 13px;
-    font-weight: 800;
-    color: #2563eb !important;
-    text-transform: uppercase;
-    letter-spacing: .08em;
-    margin-bottom: 5px;
-}}
-
-.result-card {{
-    background: linear-gradient(135deg,#0f3b8f 0%,#2563eb 48%,#7c3aed 100%);
-    border-radius: 22px;
-    padding: 34px;
-    text-align: center;
-    color: white !important;
-    box-shadow: 0 18px 45px rgba(37,99,235,.24);
-}}
-
-.result-card * {{
-    color: white !important;
-}}
-
-.result-value {{
-    font-size: clamp(36px,5vw,54px);
-    font-weight: 900;
-    margin: 8px 0;
-}}
-
-.live-summary {{
-    background: {CARD2};
-    border: 1px solid {BORDER};
-    border-radius: 17px;
-    padding: 20px;
-}}
-
-@media (max-width: 768px) {{
-    .main .block-container {{
-        padding-left: 1rem;
-        padding-right: 1rem;
+        color: {TEXT};
     }}
-    .salesai-hero {{
-        padding: 30px 24px;
+
+    [data-testid="stHeader"] {{
+        background: transparent;
+    }}
+
+    [data-testid="stSidebar"] {{
+        background:
+            linear-gradient(
+                180deg,
+                #081421 0%,
+                #0A1728 100%
+            );
+
+        border-right: 1px solid #19304B;
+    }}
+
+    [data-testid="stSidebar"] * {{
+        color: #E2E8F0 !important;
+    }}
+
+    /* ---------------- TEXT ---------------- */
+
+    h1, h2, h3, h4 {{
+        color: {TEXT} !important;
+        letter-spacing: -0.3px;
+    }}
+
+    p {{
+        color: {MUTED};
+    }}
+
+    /* ---------------- HERO ---------------- */
+
+    .hero {{
+        position: relative;
+        overflow: hidden;
+
+        padding: 42px 46px;
+        margin-bottom: 30px;
+
+        border-radius: 26px;
+
+        background:
+            linear-gradient(
+                135deg,
+                #0F3B82 0%,
+                #312E81 48%,
+                #075985 100%
+            );
+
+        border: 1px solid rgba(148,163,184,0.22);
+
+        box-shadow:
+            0 25px 70px rgba(15,23,42,0.28);
+    }}
+
+    .hero::before {{
+        content: "";
+        position: absolute;
+
+        width: 320px;
+        height: 320px;
+
+        right: -90px;
+        top: -130px;
+
+        border-radius: 50%;
+
+        background: rgba(255,255,255,0.08);
+    }}
+
+    .hero::after {{
+        content: "";
+        position: absolute;
+
+        width: 220px;
+        height: 220px;
+
+        right: 160px;
+        bottom: -150px;
+
+        border-radius: 50%;
+
+        background: rgba(34,211,238,0.10);
+    }}
+
+    .hero-content {{
+        position: relative;
+        z-index: 2;
+    }}
+
+    .hero-badge {{
+        display: inline-block;
+
+        padding: 7px 13px;
+
+        margin-bottom: 16px;
+
+        border-radius: 999px;
+
+        background: rgba(255,255,255,0.13);
+
+        border: 1px solid rgba(255,255,255,0.20);
+
+        color: #E0F2FE;
+
+        font-size: 12px;
+        font-weight: 700;
+
+        letter-spacing: 0.8px;
+    }}
+
+    .hero-title {{
+        font-size: 46px;
+        font-weight: 850;
+
+        color: white !important;
+
+        margin: 0;
+    }}
+
+    .hero-subtitle {{
+        color: #D9E8FF !important;
+
+        font-size: 17px;
+
+        max-width: 700px;
+
+        margin-top: 12px;
+        margin-bottom: 0;
+    }}
+
+    /* ---------------- SECTION ---------------- */
+
+    .section-kicker {{
+        color: #38BDF8;
+
+        font-size: 12px;
+
+        font-weight: 800;
+
+        letter-spacing: 1.6px;
+
+        text-transform: uppercase;
+
+        margin-bottom: 5px;
+    }}
+
+    .section-title {{
+        color: {TEXT};
+
+        font-size: 27px;
+
+        font-weight: 800;
+
+        margin-bottom: 20px;
+    }}
+
+    /* ---------------- KPI ---------------- */
+
+    .kpi-grid {{
+        display: grid;
+
+        grid-template-columns:
+            repeat(4, 1fr);
+
+        gap: 18px;
+
+        margin: 20px 0 35px;
+    }}
+
+    .kpi {{
+        position: relative;
+
+        overflow: hidden;
+
+        background: {CARD};
+
+        border: 1px solid {BORDER};
+
         border-radius: 20px;
+
+        padding: 22px;
+
+        min-height: 135px;
+
+        box-shadow:
+            0 10px 35px rgba(15,23,42,0.07);
     }}
-}}
+
+    .kpi::before {{
+        content: "";
+
+        position: absolute;
+
+        left: 0;
+        top: 0;
+
+        width: 100%;
+        height: 3px;
+
+        background:
+            linear-gradient(
+                90deg,
+                #2563EB,
+                #06B6D4
+            );
+    }}
+
+    .kpi-icon {{
+        font-size: 23px;
+        margin-bottom: 8px;
+    }}
+
+    .kpi-label {{
+        color: {MUTED};
+
+        font-size: 12px;
+
+        font-weight: 700;
+
+        text-transform: uppercase;
+
+        letter-spacing: 0.8px;
+    }}
+
+    .kpi-value {{
+        color: {TEXT};
+
+        font-size: 29px;
+
+        font-weight: 850;
+
+        margin-top: 4px;
+    }}
+
+    .kpi-note {{
+        color: {MUTED};
+
+        font-size: 12px;
+
+        margin-top: 5px;
+    }}
+
+    /* ---------------- CARDS ---------------- */
+
+    .info-card {{
+        background: {CARD};
+
+        border: 1px solid {BORDER};
+
+        border-radius: 20px;
+
+        padding: 25px;
+
+        height: 100%;
+
+        box-shadow:
+            0 10px 30px rgba(15,23,42,0.06);
+    }}
+
+    .info-icon {{
+        font-size: 30px;
+
+        margin-bottom: 13px;
+    }}
+
+    .info-title {{
+        color: {TEXT};
+
+        font-size: 18px;
+
+        font-weight: 800;
+
+        margin-bottom: 7px;
+    }}
+
+    .info-text {{
+        color: {MUTED};
+
+        line-height: 1.6;
+
+        font-size: 14px;
+    }}
+
+    /* ---------------- PREDICTION RESULT ---------------- */
+
+    .prediction-result {{
+        position: relative;
+
+        overflow: hidden;
+
+        padding: 30px;
+
+        border-radius: 24px;
+
+        margin: 22px 0;
+
+        background:
+            linear-gradient(
+                135deg,
+                #0F3B82,
+                #312E81,
+                #075985
+            );
+
+        border: 1px solid rgba(96,165,250,0.30);
+
+        box-shadow:
+            0 20px 60px rgba(30,64,175,0.25);
+    }}
+
+    .prediction-label {{
+        color: #BAE6FD;
+
+        font-size: 12px;
+
+        text-transform: uppercase;
+
+        font-weight: 800;
+
+        letter-spacing: 1.2px;
+    }}
+
+    .prediction-value {{
+        color: white;
+
+        font-size: 48px;
+
+        font-weight: 900;
+
+        margin: 5px 0;
+    }}
+
+    .prediction-unit {{
+        color: #CBD5E1;
+
+        font-size: 14px;
+    }}
+
+    .prediction-category {{
+        display: inline-block;
+
+        margin-top: 15px;
+
+        padding: 8px 15px;
+
+        border-radius: 999px;
+
+        background: rgba(255,255,255,0.13);
+
+        color: white;
+
+        font-weight: 750;
+    }}
+
+    /* ---------------- FORM ---------------- */
+
+    .form-card {{
+        background: {CARD};
+
+        border: 1px solid {BORDER};
+
+        border-radius: 22px;
+
+        padding: 25px;
+
+        margin-bottom: 20px;
+
+        box-shadow:
+            0 10px 30px rgba(15,23,42,0.06);
+    }}
+
+    .form-title {{
+        color: {TEXT};
+
+        font-size: 19px;
+
+        font-weight: 800;
+
+        margin-bottom: 17px;
+    }}
+
+    /* ---------------- BUTTON ---------------- */
+
+    .stButton > button {{
+        width: 100%;
+
+        border-radius: 12px;
+
+        border: 0;
+
+        padding: 13px 20px;
+
+        font-weight: 800;
+
+        color: white;
+
+        background:
+            linear-gradient(
+                90deg,
+                #2563EB,
+                #4F46E5
+            );
+
+        box-shadow:
+            0 10px 25px rgba(37,99,235,0.25);
+
+        transition: all 0.2s ease;
+    }}
+
+    .stButton > button:hover {{
+        transform: translateY(-2px);
+
+        box-shadow:
+            0 14px 30px rgba(37,99,235,0.35);
+    }}
+
+    /* ---------------- INPUTS ---------------- */
+
+    .stTextInput input,
+    .stNumberInput input,
+    .stDateInput input,
+    .stSelectbox div[data-baseweb="select"] {{
+        background: {INPUT_BG} !important;
+
+        border-radius: 10px !important;
+
+        border-color: {BORDER} !important;
+
+        color: {TEXT} !important;
+    }}
+
+    /* ---------------- SIDEBAR BRAND ---------------- */
+
+    .sidebar-brand {{
+        padding: 18px 5px 25px;
+    }}
+
+    .sidebar-logo {{
+        font-size: 32px;
+    }}
+
+    .sidebar-name {{
+        font-size: 23px;
+
+        font-weight: 900;
+
+        color: white !important;
+
+        margin-top: 4px;
+    }}
+
+    .sidebar-caption {{
+        color: #94A3B8 !important;
+
+        font-size: 12px;
+    }}
+
+    .status-card {{
+        background: rgba(30,64,175,0.18);
+
+        border: 1px solid rgba(96,165,250,0.22);
+
+        border-radius: 14px;
+
+        padding: 15px;
+
+        margin-top: 15px;
+    }}
+
+    /* ---------------- FOOTER ---------------- */
+
+    .footer {{
+        text-align: center;
+
+        color: {MUTED};
+
+        font-size: 12px;
+
+        padding: 35px 0 10px;
+    }}
+
+    /* ---------------- RESPONSIVE ---------------- */
+
+    @media (max-width: 900px) {{
+
+        .kpi-grid {{
+            grid-template-columns: repeat(2, 1fr);
+        }}
+
+        .hero-title {{
+            font-size: 36px;
+        }}
+
+    }}
+
+    @media (max-width: 600px) {{
+
+        .kpi-grid {{
+            grid-template-columns: 1fr;
+        }}
+
+        .hero {{
+            padding: 30px 25px;
+        }}
+
+    }}
+
 </style>
-""")
+"""
+)
+
+
+# =========================================================
+# LOAD MODEL
+# =========================================================
+
+@st.cache_resource
+def load_model():
+
+    return joblib.load("sales_prediction_final_model.pkl")
+
+
+try:
+
+    model = load_model()
+
+    model_loaded = True
+
+except Exception as e:
+
+    model = None
+    model_loaded = False
 
 
 # =========================================================
@@ -290,35 +620,28 @@ div[data-testid="stAlert"] {{
 
 with st.sidebar:
 
-    st.html(f"""
-    <div style="
-        padding:8px 4px 20px 4px;
-        border-bottom:1px solid {BORDER};
-        margin-bottom:20px;
-    ">
-        <div style="
-            font-size:26px;
-            font-weight:800;
-            color:{TEXT};
-        ">
-            📊 SalesAI
-        </div>
+    st.html(
+        """
+        <div class="sidebar-brand">
 
-        <div style="
-            font-size:12px;
-            color:{MUTED};
-            margin-top:6px;
-            line-height:1.5;
-        ">
-            Sales Prediction & Business Decision Support
-        </div>
-    </div>
-    """)
+            <div class="sidebar-logo">📊</div>
 
-    st.markdown("### 🧭 Navigation")
+            <div class="sidebar-name">
+                SalesAI
+            </div>
+
+            <div class="sidebar-caption">
+                Intelligent Sales Prediction
+            </div>
+
+        </div>
+        """
+    )
+
+    st.markdown("### Navigation")
 
     page = st.radio(
-        "Navigation",
+        "Go to",
         [
             "🏠 Dashboard",
             "🔮 Sales Prediction",
@@ -330,9 +653,7 @@ with st.sidebar:
         label_visibility="collapsed"
     )
 
-    st.markdown("---")
-
-    st.markdown("### 🎨 Appearance")
+    st.divider()
 
     night = st.toggle(
         "🌙 Night Mode",
@@ -340,20 +661,59 @@ with st.sidebar:
     )
 
     if night != st.session_state.night_mode:
+
         st.session_state.night_mode = night
         st.rerun()
 
-    st.markdown("---")
+    if model_loaded:
 
-    st.markdown("### 🟢 Model Status")
+        st.html(
+            """
+            <div class="status-card">
 
-    st.success("Model Loaded")
+                <div style="font-size:12px;color:#93C5FD;">
+                    MODEL STATUS
+                </div>
 
-    st.caption("⚡ Gradient Boosting Regressor")
+                <div style="
+                    font-size:16px;
+                    font-weight:800;
+                    margin-top:5px;
+                ">
+                    🟢 Model Loaded
+                </div>
 
-    st.metric(
-        "Model R²",
-        "94.96%"
+                <div style="
+                    font-size:12px;
+                    color:#94A3B8;
+                    margin-top:5px;
+                ">
+                    Gradient Boosting Regressor
+                </div>
+
+            </div>
+            """
+        )
+
+    else:
+
+        st.error("Model file not found.")
+
+    st.markdown("")
+
+    st.html(
+        """
+        <div style="
+            padding:12px;
+            color:#64748B;
+            font-size:11px;
+            line-height:1.5;
+        ">
+            SalesAI uses Machine Learning to
+            predict sales and support
+            business decisions.
+        </div>
+        """
     )
 
 
@@ -361,19 +721,30 @@ with st.sidebar:
 # HERO
 # =========================================================
 
-st.html(f"""
-<div class="salesai-hero">
-    <div class="salesai-hero-title">📊 SalesAI</div>
-    <div class="salesai-hero-subtitle">
-        Intelligent Sales Prediction & Business Decision Support
+st.html(
+    """
+    <div class="hero">
+
+        <div class="hero-content">
+
+            <div class="hero-badge">
+                AI-POWERED SALES ANALYTICS PLATFORM
+            </div>
+
+            <div class="hero-title">
+                SalesAI
+            </div>
+
+            <div class="hero-subtitle">
+                Sales Prediction & Business Decision Support System
+                powered by Machine Learning.
+            </div>
+
+        </div>
+
     </div>
-    <div class="salesai-pill">
-        🤖 Machine Learning &nbsp; • &nbsp;
-        📈 Business Analytics &nbsp; • &nbsp;
-        🔮 Sales Forecasting
-    </div>
-</div>
-""")
+    """
+)
 
 
 # =========================================================
@@ -382,200 +753,141 @@ st.html(f"""
 
 if page == "🏠 Dashboard":
 
-    st.html(f"""
-    <div style="
-        background:{CARD};
-        border:1px solid {BORDER};
-        border-radius:18px;
-        padding:25px;
-        margin-bottom:20px;
-    ">
-
-        <div style="
-            font-size:25px;
-            font-weight:800;
-            color:{TEXT};
-        ">
-            👋 Welcome to SalesAI
+    st.html(
+        """
+        <div class="section-kicker">
+            OVERVIEW
         </div>
 
-        <div style="
-            color:{MUTED};
-            font-size:15px;
-            margin-top:8px;
-        ">
-            Analyze sales information, predict expected sales,
-            and generate business-oriented insights.
+        <div class="section-title">
+            Sales Intelligence Dashboard
+        </div>
+        """
+    )
+
+    st.html(
+        """
+        <div class="kpi-grid">
+
+            <div class="kpi">
+                <div class="kpi-icon">🎯</div>
+                <div class="kpi-label">Model R²</div>
+                <div class="kpi-value">94.96%</div>
+                <div class="kpi-note">
+                    Prediction performance
+                </div>
+            </div>
+
+            <div class="kpi">
+                <div class="kpi-icon">📉</div>
+                <div class="kpi-label">MAE</div>
+                <div class="kpi-value">150.10</div>
+                <div class="kpi-note">
+                    Mean Absolute Error
+                </div>
+            </div>
+
+            <div class="kpi">
+                <div class="kpi-icon">📐</div>
+                <div class="kpi-label">RMSE</div>
+                <div class="kpi-value">498.65</div>
+                <div class="kpi-note">
+                    Root Mean Square Error
+                </div>
+            </div>
+
+            <div class="kpi">
+                <div class="kpi-icon">🤖</div>
+                <div class="kpi-label">Best Model</div>
+                <div class="kpi-value">GBR</div>
+                <div class="kpi-note">
+                    Gradient Boosting
+                </div>
+            </div>
+
+        </div>
+        """
+    )
+
+    st.html(
+        """
+        <div class="section-kicker">
+            PLATFORM
         </div>
 
-    </div>
-    """)
+        <div class="section-title">
+            What can you do?
+        </div>
+        """
+    )
 
-    # KPI CARDS
-
-    c1, c2, c3, c4 = st.columns(4)
+    c1, c2, c3 = st.columns(3)
 
     with c1:
-        st.html(f"""
-        <div style="
-            background:{CARD};
-            border:1px solid {BORDER};
-            border-radius:18px;
-            padding:22px;
-            min-height:130px;
-        ">
-            <div style="font-size:28px;">🎯</div>
-            <div style="color:{MUTED};font-size:13px;margin-top:8px;">
-                Problem Type
+
+        st.html(
+            """
+            <div class="info-card">
+
+                <div class="info-icon">🔮</div>
+
+                <div class="info-title">
+                    Predict Sales
+                </div>
+
+                <div class="info-text">
+                    Enter order, product and customer
+                    information to generate an
+                    AI-based sales prediction.
+                </div>
+
             </div>
-            <div style="
-                color:{TEXT};
-                font-size:21px;
-                font-weight:800;
-                margin-top:5px;
-            ">
-                Regression
-            </div>
-        </div>
-        """)
+            """
+        )
 
     with c2:
-        st.html(f"""
-        <div style="
-            background:{CARD};
-            border:1px solid {BORDER};
-            border-radius:18px;
-            padding:22px;
-            min-height:130px;
-        ">
-            <div style="font-size:28px;">🧠</div>
-            <div style="color:{MUTED};font-size:13px;margin-top:8px;">
-                ML Algorithm
+
+        st.html(
+            """
+            <div class="info-card">
+
+                <div class="info-icon">💡</div>
+
+                <div class="info-title">
+                    Business Insights
+                </div>
+
+                <div class="info-text">
+                    Understand products, regions,
+                    states and monthly trends to
+                    support business decisions.
+                </div>
+
             </div>
-            <div style="
-                color:{TEXT};
-                font-size:21px;
-                font-weight:800;
-                margin-top:5px;
-            ">
-                Gradient Boosting
-            </div>
-        </div>
-        """)
+            """
+        )
 
     with c3:
-        st.html(f"""
-        <div style="
-            background:{CARD};
-            border:1px solid {BORDER};
-            border-radius:18px;
-            padding:22px;
-            min-height:130px;
-        ">
-            <div style="font-size:28px;">📈</div>
-            <div style="color:{MUTED};font-size:13px;margin-top:8px;">
-                Model Performance
+
+        st.html(
+            """
+            <div class="info-card">
+
+                <div class="info-icon">📊</div>
+
+                <div class="info-title">
+                    Power BI Analytics
+                </div>
+
+                <div class="info-text">
+                    Explore the interactive Power BI
+                    dashboard for deeper sales and
+                    profitability analysis.
+                </div>
+
             </div>
-            <div style="
-                color:{TEXT};
-                font-size:21px;
-                font-weight:800;
-                margin-top:5px;
-            ">
-                R² = 94.96%
-            </div>
-        </div>
-        """)
-
-    with c4:
-        st.html(f"""
-        <div style="
-            background:{CARD};
-            border:1px solid {BORDER};
-            border-radius:18px;
-            padding:22px;
-            min-height:130px;
-        ">
-            <div style="font-size:28px;">🇮🇳</div>
-            <div style="color:{MUTED};font-size:13px;margin-top:8px;">
-                Market
-            </div>
-            <div style="
-                color:{TEXT};
-                font-size:21px;
-                font-weight:800;
-                margin-top:5px;
-            ">
-                India
-            </div>
-        </div>
-        """)
-
-    st.markdown("")
-
-    st.subheader("🚀 What can you do?")
-
-    a, b, c = st.columns(3)
-
-    with a:
-        st.html(f"""
-        <div style="
-            background:{CARD};
-            border:1px solid {BORDER};
-            border-radius:18px;
-            padding:25px;
-            min-height:180px;
-        ">
-            <div style="font-size:35px;">🔮</div>
-            <h3 style="color:{TEXT};margin-bottom:8px;">
-                Predict Sales
-            </h3>
-            <p style="color:{MUTED};line-height:1.6;">
-                Enter order, product and regional information
-                to estimate expected sales.
-            </p>
-        </div>
-        """)
-
-    with b:
-        st.html(f"""
-        <div style="
-            background:{CARD};
-            border:1px solid {BORDER};
-            border-radius:18px;
-            padding:25px;
-            min-height:180px;
-        ">
-            <div style="font-size:35px;">📊</div>
-            <h3 style="color:{TEXT};margin-bottom:8px;">
-                Analyze Business
-            </h3>
-            <p style="color:{MUTED};line-height:1.6;">
-                Understand product, segment, regional and
-                seasonal sales performance.
-            </p>
-        </div>
-        """)
-
-    with c:
-        st.html(f"""
-        <div style="
-            background:{CARD};
-            border:1px solid {BORDER};
-            border-radius:18px;
-            padding:25px;
-            min-height:180px;
-        ">
-            <div style="font-size:35px;">💡</div>
-            <h3 style="color:{TEXT};margin-bottom:8px;">
-                Make Decisions
-            </h3>
-            <p style="color:{MUTED};line-height:1.6;">
-                Use predictions and business insights to
-                support inventory and sales planning.
-            </p>
-        </div>
-        """)
+            """
+        )
 
 
 # =========================================================
@@ -584,40 +896,43 @@ if page == "🏠 Dashboard":
 
 elif page == "🔮 Sales Prediction":
 
-    st.html(f"""
-    <div style="
-        background:{CARD};
-        border:1px solid {BORDER};
-        border-radius:18px;
-        padding:25px;
-        margin-bottom:20px;
-    ">
-        <div style="
-            font-size:25px;
-            font-weight:800;
-            color:{TEXT};
-        ">
-            🔮 Sales Prediction
+    st.html(
+        """
+        <div class="section-kicker">
+            MACHINE LEARNING
         </div>
 
-        <div style="
-            color:{MUTED};
-            margin-top:7px;
-        ">
-            Enter order and product information to predict expected sales.
+        <div class="section-title">
+            Sales Prediction
         </div>
-    </div>
-    """)
+
+        <p>
+            Configure the order details below and let
+            SalesAI estimate the expected sales value.
+        </p>
+        """
+    )
 
     # -----------------------------------------------------
     # ORDER INFORMATION
     # -----------------------------------------------------
 
-    st.subheader("🛒 Order Information")
+    st.html(
+        """
+        <div class="form-card">
+
+            <div class="form-title">
+                🧾 Step 1 — Order Information
+            </div>
+
+        </div>
+        """
+    )
 
     c1, c2, c3, c4 = st.columns(4)
 
     with c1:
+
         unit_price = st.number_input(
             "Unit Price",
             min_value=0.0,
@@ -626,6 +941,7 @@ elif page == "🔮 Sales Prediction":
         )
 
     with c2:
+
         qty_ordered = st.number_input(
             "Quantity Ordered",
             min_value=1,
@@ -634,6 +950,7 @@ elif page == "🔮 Sales Prediction":
         )
 
     with c3:
+
         discount = st.number_input(
             "Discount Offered",
             min_value=0.0,
@@ -642,6 +959,7 @@ elif page == "🔮 Sales Prediction":
         )
 
     with c4:
+
         freight_expenses = st.number_input(
             "Freight Expenses",
             min_value=0.0,
@@ -653,144 +971,161 @@ elif page == "🔮 Sales Prediction":
     # DATE
     # -----------------------------------------------------
 
-    st.subheader("📅 Order Date")
+    st.html(
+        """
+        <div class="form-card">
+
+            <div class="form-title">
+                📅 Step 2 — Order Date
+            </div>
+
+        </div>
+        """
+    )
 
     order_date = st.date_input(
-        "Select Order Date",
-        value=date(2013, 11, 15),
-        min_value=date(2000, 1, 1),
-        max_value=date(2030, 12, 31)
+        "Order Date",
+        value=date.today()
     )
 
     order_year = order_date.year
     order_month = order_date.month
-    order_day = order_date.day
-
     order_quarter = ((order_month - 1) // 3) + 1
-
+    order_day = order_date.day
     order_dayofweek = order_date.weekday()
 
-    d1, d2, d3, d4 = st.columns(4)
-
-    with d1:
-        st.metric("Year", order_year)
-
-    with d2:
-        st.metric("Month", order_month)
-
-    with d3:
-        st.metric("Quarter", f"Q{order_quarter}")
-
-    with d4:
-        st.metric("Day of Week", order_dayofweek)
+    st.caption(
+        f"Year: {order_year}  •  "
+        f"Month: {order_month}  •  "
+        f"Quarter: Q{order_quarter}  •  "
+        f"Day: {order_day}  •  "
+        f"Day of Week: {order_dayofweek}"
+    )
 
     # -----------------------------------------------------
     # PRODUCT INFORMATION
     # -----------------------------------------------------
 
-    st.subheader("📦 Product & Customer Information")
+    st.html(
+        """
+        <div class="form-card">
 
-    c1, c2, c3 = st.columns(3)
+            <div class="form-title">
+                🛒 Step 3 — Product & Customer Information
+            </div>
+
+        </div>
+        """
+    )
+
+    c1, c2 = st.columns(2)
 
     with c1:
 
         order_priority = st.selectbox(
             "Order Priority",
             [
+                "Critical",
                 "High",
-                "Low",
-                "Not Specified",
                 "Medium",
-                "Critical"
+                "Low"
             ]
         )
 
         freight_mode = st.selectbox(
             "Freight Mode",
             [
-                "Regular Air",
                 "Delivery Truck",
-                "Express Air"
+                "Express Air",
+                "Regular Air"
             ]
         )
 
         segment = st.selectbox(
             "Segment",
             [
-                "Hotels / Hospitals",
-                "Restaurant Chain",
-                "Personel Usage",
-                "Stand Alone Restaurants"
+                "Consumer",
+                "Corporate",
+                "Home Office"
+            ]
+        )
+
+        product_type = st.selectbox(
+            "Product Type",
+            [
+                "Office Supplies",
+                "Technology",
+                "Furniture"
             ]
         )
 
     with c2:
 
-        product_type = st.selectbox(
-            "Product Type",
-            [
-                "Processed Meat",
-                "Canned Foods",
-                "Preserved Food"
-            ]
-        )
-
         product_sub_category = st.selectbox(
             "Product Sub-Category",
             [
-                "Smoked Salmon",
-                "Quail Eggs",
-                "Bacon",
-                "Marmalade",
-                "Assorted Fruits",
-                "Foie Gras",
-                "Fresh Water Eel",
-                "Sliced Pineapple",
-                "Jams",
-                "Jelly Fish",
-                "Sundried Tomatoes",
-                "Wild Berry",
-                "Pickle",
-                "Caviar",
-                "Pacific Squid",
-                "Oysters (Clam)",
-                "Tuna"
+                "Appliances",
+                "Binders and Binder Accessories",
+                "Bookcases",
+                "Chairs & Chairmats",
+                "Computer Peripherals",
+                "Copiers and Fax",
+                "Envelopes",
+                "Labels",
+                "Office Furnishings",
+                "Paper",
+                "Pens & Art Supplies",
+                "Rubber Bands",
+                "Scissors, Rulers and Trimmers",
+                "Storage & Organization",
+                "Tables"
             ]
         )
-
-    with c3:
 
         product_container = st.selectbox(
             "Product Container",
             [
                 "Small Box",
-                "Wrap Bag",
-                "Small Pack",
-                "Jumbo Drum",
-                "Jumbo Box",
                 "Medium Box",
-                "Large Box"
+                "Large Box",
+                "Jumbo Box",
+                "Small Pack",
+                "Medium Pack",
+                "Large Pack"
             ]
         )
 
         state = st.selectbox(
             "State",
             [
-                "Uttar Pradesh",
-                "Madhya Pradesh",
-                "Bihar",
-                "Tamil Nadu",
-                "Maharashtra",
-                "West Bengal",
                 "Andhra Pradesh",
+                "Assam",
+                "Bihar",
+                "Delhi",
+                "Goa",
                 "Gujarat",
-                "Rajasthan",
+                "Haryana",
+                "Himachal Pradesh",
+                "Jammu and Kashmir",
                 "Jharkhand",
                 "Karnataka",
-                "Haryana",
+                "Kerala",
+                "Madhya Pradesh",
+                "Maharashtra",
+                "Manipur",
+                "Meghalaya",
+                "Mizoram",
+                "Nagaland",
+                "Odisha",
+                "Punjab",
+                "Rajasthan",
+                "Sikkim",
+                "Tamil Nadu",
                 "Telangana",
-                "Assam",
-                "Kerala"
+                "Tripura",
+                "Uttar Pradesh",
+                "Uttarakhand",
+                "West Bengal"
             ]
         )
 
@@ -798,9 +1133,9 @@ elif page == "🔮 Sales Prediction":
             "Region",
             [
                 "North",
-                "West",
                 "South",
-                "East"
+                "East",
+                "West"
             ]
         )
 
@@ -808,140 +1143,206 @@ elif page == "🔮 Sales Prediction":
     # LIVE SUMMARY
     # -----------------------------------------------------
 
-    st.html(f"""
-<div class="live-summary">
-    <div style="font-size:19px;font-weight:850;color:{TEXT};margin-bottom:15px;">
-        ⚡ Live Prediction Summary
-    </div>
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;">
-        <div>
-            <div style="color:{MUTED};font-size:12px;">Unit Price</div>
-            <div style="color:{TEXT};font-size:18px;font-weight:750;">₹{unit_price:,.2f}</div>
+    st.html(
+        """
+        <div class="section-kicker">
+            LIVE SUMMARY
         </div>
-        <div>
-            <div style="color:{MUTED};font-size:12px;">Quantity</div>
-            <div style="color:{TEXT};font-size:18px;font-weight:750;">{qty_ordered}</div>
+
+        <div class="section-title">
+            Order Overview
         </div>
-        <div>
-            <div style="color:{MUTED};font-size:12px;">Discount</div>
-            <div style="color:{TEXT};font-size:18px;font-weight:750;">{discount:.1f}%</div>
-        </div>
-        <div>
-            <div style="color:{MUTED};font-size:12px;">Region</div>
-            <div style="color:{TEXT};font-size:18px;font-weight:750;">{region}</div>
-        </div>
-    </div>
-</div>
-""")
+        """
+    )
+
+    s1, s2, s3, s4 = st.columns(4)
+
+    with s1:
+        st.metric(
+            "Unit Price",
+            f"{unit_price:,.2f}"
+        )
+
+    with s2:
+        st.metric(
+            "Quantity",
+            f"{qty_ordered:,}"
+        )
+
+    with s3:
+        st.metric(
+            "Discount",
+            f"{discount:,.2f}"
+        )
+
+    with s4:
+        st.metric(
+            "Freight",
+            f"{freight_expenses:,.2f}"
+        )
+
+    st.markdown("")
+
+    predict_button = st.button(
+        "🚀 Generate Sales Prediction",
+        use_container_width=True
+    )
 
     # -----------------------------------------------------
     # PREDICTION
     # -----------------------------------------------------
 
-    st.subheader("🚀 Generate Prediction")
+    if predict_button:
 
-    if st.button(
-        "🔮 Predict Expected Sales",
-        use_container_width=True,
-        type="primary"
-    ):
+        if not model_loaded:
 
-        input_data = pd.DataFrame({
-
-            "Unit Price": [unit_price],
-
-            "QtyOrdered": [qty_ordered],
-
-            "Discount offered": [discount],
-
-            "Freight Expenses": [freight_expenses],
-
-            "Order Year": [order_year],
-
-            "Order Month": [order_month],
-
-            "Order Quarter": [order_quarter],
-
-            "Order Day": [order_day],
-
-            "Order DayOfWeek": [order_dayofweek],
-
-            "Order Priority": [order_priority],
-
-            "Freight Mode": [freight_mode],
-
-            "Segment": [segment],
-
-            "Product Type": [product_type],
-
-            "Product Sub-Category": [product_sub_category],
-
-            "Product Container": [product_container],
-
-            "State": [state],
-
-            "Region": [region]
-        })
-
-        prediction = model.predict(input_data)[0]
-
-        if prediction < 500:
-            category = "Low Sales"
-            emoji = "🔵"
-        elif prediction < 2000:
-            category = "Medium Sales"
-            emoji = "🟡"
-        else:
-            category = "High Sales"
-            emoji = "🟢"
-
-        st.html(f"""
-<div class="result-card">
-    <div style="font-size:17px;font-weight:700;opacity:.88;">
-        💰 Predicted Sales
-    </div>
-    <div class="result-value">₹{prediction:,.2f}</div>
-    <div style="font-size:18px;font-weight:750;">
-        {emoji} {category}
-    </div>
-    <div style="font-size:13px;opacity:.78;margin-top:8px;">
-        AI-generated estimate based on order, product, date and regional factors
-    </div>
-</div>
-""")
-
-        # -------------------------------------------------
-        # RECOMMENDATIONS
-        # -------------------------------------------------
-
-        st.subheader("💡 Business Recommendation")
-
-        if prediction >= 2000:
-
-            st.success(
-                "High expected sales. Consider maintaining sufficient inventory "
-                "and preparing distribution capacity."
+            st.error(
+                "Model file not found. "
+                "Please upload sales_prediction_final_model.pkl."
             )
 
-        elif prediction >= 500:
+        else:
+
+            input_data = pd.DataFrame({
+
+                "Unit Price": [unit_price],
+
+                "QtyOrdered": [qty_ordered],
+
+                "Discount offered": [discount],
+
+                "Freight Expenses": [freight_expenses],
+
+                "Order Year": [order_year],
+
+                "Order Month": [order_month],
+
+                "Order Quarter": [order_quarter],
+
+                "Order Day": [order_day],
+
+                "Order DayOfWeek": [order_dayofweek],
+
+                "Order Priority": [order_priority],
+
+                "Freight Mode": [freight_mode],
+
+                "Segment": [segment],
+
+                "Product Type": [product_type],
+
+                "Product Sub-Category": [
+                    product_sub_category
+                ],
+
+                "Product Container": [
+                    product_container
+                ],
+
+                "State": [state],
+
+                "Region": [region]
+
+            })
+
+            try:
+
+                prediction = model.predict(
+                    input_data
+                )[0]
+
+                st.session_state.last_prediction = prediction
+
+            except Exception as e:
+
+                st.error(
+                    f"Prediction error: {e}"
+                )
+
+    # -----------------------------------------------------
+    # RESULT
+    # -----------------------------------------------------
+
+    if st.session_state.last_prediction is not None:
+
+        prediction = st.session_state.last_prediction
+
+        if prediction < 500:
+
+            category = "Low Sales"
+            emoji = "📉"
+
+        elif prediction < 2000:
+
+            category = "Medium Sales"
+            emoji = "📊"
+
+        else:
+
+            category = "High Sales"
+            emoji = "🚀"
+
+        st.html(
+            f"""
+            <div class="prediction-result">
+
+                <div class="prediction-label">
+                    AI PREDICTED SALES
+                </div>
+
+                <div class="prediction-value">
+                    {prediction:,.2f}
+                </div>
+
+                <div class="prediction-unit">
+                    Estimated sales value
+                </div>
+
+                <div class="prediction-category">
+                    {emoji} {category}
+                </div>
+
+            </div>
+            """
+        )
+
+        # Recommendation
+
+        st.html(
+            """
+            <div class="form-card">
+
+                <div class="form-title">
+                    💡 AI Business Recommendation
+                </div>
+
+            </div>
+            """
+        )
+
+        if category == "High Sales":
+
+            st.success(
+                "Strong sales potential detected. "
+                "Consider maintaining inventory levels, "
+                "prioritizing this order and monitoring "
+                "customer demand."
+            )
+
+        elif category == "Medium Sales":
 
             st.info(
-                "Medium expected sales. Monitor demand and maintain balanced "
-                "inventory levels."
+                "Moderate sales potential detected. "
+                "Review pricing, discount strategy, "
+                "product demand and regional performance."
             )
 
         else:
 
             st.warning(
-                "Low expected sales. Review pricing, demand and promotional "
-                "strategy before increasing inventory."
-            )
-
-        with st.expander("🔎 View Prediction Input Data"):
-
-            st.dataframe(
-                input_data,
-                use_container_width=True
+                "Low sales potential detected. "
+                "Consider reviewing pricing, product "
+                "selection, discounts and market demand."
             )
 
 
@@ -951,427 +1352,270 @@ elif page == "🔮 Sales Prediction":
 
 elif page == "💡 Business Insights":
 
-    st.html(f"""
-    <div style="
-        background:{CARD};
-        border:1px solid {BORDER};
-        border-radius:18px;
-        padding:25px;
-        margin-bottom:20px;
-    ">
-
-        <div style="
-            font-size:25px;
-            font-weight:800;
-            color:{TEXT};
-        ">
-            💡 Business Insights
+    st.html(
+        """
+        <div class="section-kicker">
+            BUSINESS INTELLIGENCE
         </div>
 
-        <div style="
-            color:{MUTED};
-            margin-top:7px;
-        ">
-            Key findings obtained from the sales analysis.
+        <div class="section-title">
+            Business Insights
         </div>
 
-    </div>
-    """)
-
-    # PRODUCT
-
-    st.subheader("📦 Product Strategy")
+        <p>
+            Key findings generated from the sales analysis.
+        </p>
+        """
+    )
 
     c1, c2 = st.columns(2)
 
     with c1:
-        st.html(f"""
-        <div style="
-            background:{CARD};
-            border:1px solid {BORDER};
-            border-radius:18px;
-            padding:25px;
-        ">
-            <div style="font-size:32px;">🏆</div>
-            <div style="
-                color:{TEXT};
-                font-size:20px;
-                font-weight:800;
-                margin-top:8px;
-            ">
-                Sliced Pineapple
+
+        st.html(
+            """
+            <div class="info-card">
+
+                <div class="info-icon">
+                    🍍
+                </div>
+
+                <div class="info-title">
+                    Top Sales Product
+                </div>
+
+                <div class="info-text">
+                    Sliced Pineapple recorded the
+                    highest total sales.
+                </div>
+
             </div>
-            <div style="
-                color:{MUTED};
-                margin-top:8px;
-                line-height:1.6;
-            ">
-                Highest total sales among product sub-categories.
-                Maintain sufficient inventory and strengthen marketing.
-            </div>
-        </div>
-        """)
+            """
+        )
 
     with c2:
-        st.html(f"""
-        <div style="
-            background:{CARD};
-            border:1px solid {BORDER};
-            border-radius:18px;
-            padding:25px;
-        ">
-            <div style="font-size:32px;">⚠️</div>
-            <div style="
-                color:{TEXT};
-                font-size:20px;
-                font-weight:800;
-                margin-top:8px;
-            ">
-                Jams & Tuna
+
+        st.html(
+            """
+            <div class="info-card">
+
+                <div class="info-icon">
+                    🏆
+                </div>
+
+                <div class="info-title">
+                    Highest Profit Product
+                </div>
+
+                <div class="info-text">
+                    Quail Eggs recorded the highest
+                    total profit.
+                </div>
+
             </div>
-            <div style="
-                color:{MUTED};
-                margin-top:8px;
-                line-height:1.6;
-            ">
-                Negative total profit. Review pricing, discounts
-                and procurement costs.
-            </div>
-        </div>
-        """)
+            """
+        )
 
     st.markdown("")
-
-    # REGION
-
-    st.subheader("🌍 Regional Strategy")
 
     c1, c2 = st.columns(2)
 
     with c1:
-        st.html(f"""
-        <div style="
-            background:{CARD};
-            border:1px solid {BORDER};
-            border-radius:18px;
-            padding:25px;
-        ">
-            <div style="font-size:32px;">🥇</div>
-            <div style="
-                color:{TEXT};
-                font-size:20px;
-                font-weight:800;
-            ">
-                North Region
+
+        st.html(
+            """
+            <div class="info-card">
+
+                <div class="info-icon">
+                    🌎
+                </div>
+
+                <div class="info-title">
+                    Strongest Region
+                </div>
+
+                <div class="info-text">
+                    North region generated the
+                    highest total sales and strong
+                    profitability.
+                </div>
+
             </div>
-            <div style="
-                color:{MUTED};
-                margin-top:8px;
-            ">
-                Highest total sales and total profit.
-                Prioritize inventory, distribution and marketing.
-            </div>
-        </div>
-        """)
+            """
+        )
 
     with c2:
-        st.html(f"""
-        <div style="
-            background:{CARD};
-            border:1px solid {BORDER};
-            border-radius:18px;
-            padding:25px;
-        ">
-            <div style="font-size:32px;">📍</div>
-            <div style="
-                color:{TEXT};
-                font-size:20px;
-                font-weight:800;
-            ">
-                Haryana
+
+        st.html(
+            """
+            <div class="info-card">
+
+                <div class="info-icon">
+                    📅
+                </div>
+
+                <div class="info-title">
+                    Peak Month
+                </div>
+
+                <div class="info-text">
+                    November recorded the highest
+                    sales performance.
+                </div>
+
             </div>
-            <div style="
-                color:{MUTED};
-                margin-top:8px;
-            ">
-                Negative total profit. Investigate pricing,
-                discounts and logistics costs.
-            </div>
-        </div>
-        """)
+            """
+        )
 
     st.markdown("")
 
-    # SEGMENT
-
-    st.subheader("👥 Segment Strategy")
-
-    st.html(f"""
-    <div style="
-        background:{CARD};
-        border:1px solid {BORDER};
-        border-radius:18px;
-        padding:25px;
-    ">
-
-        <div style="font-size:32px;">🏢</div>
-
-        <div style="
-            color:{TEXT};
-            font-size:20px;
-            font-weight:800;
-            margin-top:8px;
-        ">
-            Stand Alone Restaurants
+    st.html(
+        """
+        <div class="section-kicker">
+            ACTIONABLE RECOMMENDATIONS
         </div>
 
-        <div style="
-            color:{MUTED};
-            margin-top:8px;
-            line-height:1.6;
-        ">
-            This segment generated the highest total profit and
-            highest average profit. It can be a priority segment
-            for profitable customer-focused strategies.
+        <div class="section-title">
+            What should the business do?
         </div>
-
-    </div>
-    """)
-
-    st.markdown("")
-
-    # SEASONAL
-
-    st.subheader("📅 Seasonal Strategy")
-
-    st.html(f"""
-    <div style="
-        background:linear-gradient(135deg,#f97316,#ec4899);
-        border-radius:18px;
-        padding:28px;
-        color:white;
-    ">
-
-        <div style="font-size:34px;">🔥</div>
-
-        <div style="
-            color:white;
-            font-size:24px;
-            font-weight:800;
-        ">
-            November Peak
-        </div>
-
-        <div style="
-            color:white;
-            margin-top:8px;
-            line-height:1.6;
-        ">
-            November recorded the highest total sales.
-            Increase inventory and promotional planning before
-            the peak period.
-        </div>
-
-    </div>
-    """)
-   
-
-    # ========================================================
-    # RECOMMENDATIONS
-    # ========================================================
-
-    st.markdown("### 🎯 Business Recommendations")
+        """
+    )
 
     recommendations = [
-        "🍍 Maintain sufficient inventory for high-sales products such as Sliced Pineapple.",
-        "💰 Review pricing, discounts and procurement costs for low-profit products.",
-        "🏆 Focus on profitable customer segments such as Stand Alone Restaurants.",
-        "🗺️ Prioritize inventory and distribution planning in the North region.",
-        "⚠️ Investigate pricing, discount and logistics factors affecting Haryana profitability.",
-        "📅 Prepare inventory and promotional planning before the November sales peak.",
-        "🤖 Use ML sales predictions to support inventory and future sales planning."
+
+        "Focus inventory planning on high-performing products.",
+
+        "Review negative-profit products such as Jams and Tuna.",
+
+        "Investigate Haryana's negative profitability.",
+
+        "Use regional demand patterns for targeted sales strategies.",
+
+        "Prepare additional inventory before November demand peaks.",
+
+        "Use the ML prediction system to support order-level decisions."
+
     ]
 
     for item in recommendations:
 
-        st.write(item)
-
-
-# =========================================================
-# SQL ANALYSIS
-# =========================================================
-
-elif page == "🗄️ SQL Analysis":
-
-    st.html(f"""
-    <div class="ai-card" style="margin-bottom:22px;">
-        <div class="section-label">DATABASE ANALYTICS</div>
-        <div style="font-size:26px;font-weight:850;color:{TEXT};">
-            🗄️ SQL Analysis
-        </div>
-        <div style="color:{MUTED};margin-top:7px;">
-            Explore the SQLite sales database and key business queries.
-        </div>
-    </div>
-    """)
-
-    try:
-        conn = sqlite3.connect("sales.db")
-        tables = pd.read_sql_query(
-            "SELECT name FROM sqlite_master WHERE type='table' ORDER BY name",
-            conn
+        st.markdown(
+            f"• **{item}**"
         )
 
-        if tables.empty:
-            st.info("No SQLite tables were found.")
-        else:
-            table_name = st.selectbox("Select Table", tables["name"].tolist())
 
-            row_count = pd.read_sql_query(
-                f"SELECT COUNT(*) AS Rows FROM [{table_name}]",
-                conn
-            ).iloc[0, 0]
-
-            c1, c2 = st.columns(2)
-            with c1:
-                st.metric("Rows", f"{row_count:,}")
-            with c2:
-                st.metric("Tables Available", len(tables))
-
-            st.subheader("🔎 Data Preview")
-            preview = pd.read_sql_query(
-                f"SELECT * FROM [{table_name}] LIMIT 100",
-                conn
-            )
-            st.dataframe(preview, use_container_width=True, hide_index=True)
-
-        conn.close()
-
-    except Exception as e:
-        st.warning("SQLite database is not available in the current app folder.")
-        st.caption(f"Details: {e}")
-
-
-# =========================================================
-# POWER BI DASHBOARD
-# =========================================================
-
-elif page == "📊 Power BI Dashboard":
-
-    st.html(f"""
-    <div style="
-        background:{CARD};
-        border:1px solid {BORDER};
-        border-radius:18px;
-        padding:25px;
-        margin-bottom:20px;
-    ">
-        <div style="
-            font-size:25px;
-            font-weight:800;
-            color:{TEXT};
-        ">
-            📊 Power BI Dashboard
-        </div>
-
-        <div style="
-            color:{MUTED};
-            margin-top:7px;
-        ">
-            Interactive Sales Analytics Dashboard
-        </div>
-    </div>
-    """)
-
-    powerbi_url = "https://app.powerbi.com/view?r=eyJrIjoiNzUwZDI1NjYtZjQ2Zi00M2FmLWE1MDQtYjFlNWQ3ODAwZTUxIiwidCI6IjcwMzY2YzAyLTkwOTUtNDMwOS04MDFhLTQ1MzUyOTUwYzg0MiJ9"
-
-    st.components.v1.iframe(
-        src=powerbi_url,
-        height=750,
-        scrolling=True
-    )
 # =========================================================
 # ABOUT MODEL
 # =========================================================
 
 elif page == "🤖 About Model":
 
-    st.html(f"""
-    <div style="
-        background:{CARD};
-        border:1px solid {BORDER};
-        border-radius:18px;
-        padding:25px;
-        margin-bottom:20px;
-    ">
-
-        <div style="
-            font-size:25px;
-            font-weight:800;
-            color:{TEXT};
-        ">
-            🤖 About the Machine Learning Model
+    st.html(
+        """
+        <div class="section-kicker">
+            MACHINE LEARNING
         </div>
 
-        <div style="
-            color:{MUTED};
-            margin-top:7px;
-        ">
-            Gradient Boosting based Sales Prediction Model
+        <div class="section-title">
+            Model Performance
         </div>
-
-    </div>
-    """)
+        """
+    )
 
     c1, c2, c3 = st.columns(3)
 
     with c1:
+
         st.metric(
             "R² Score",
             "94.96%"
         )
 
     with c2:
-        st.metric(
-            "RMSE",
-            "498.65"
-        )
 
-    with c3:
         st.metric(
             "MAE",
             "150.10"
         )
 
+    with c3:
+
+        st.metric(
+            "RMSE",
+            "498.65"
+        )
+
     st.markdown("")
 
-    st.subheader("📊 Model Comparison")
+    st.html(
+        """
+        <div class="info-card">
+
+            <div class="info-icon">
+                🤖
+            </div>
+
+            <div class="info-title">
+                Gradient Boosting Regressor
+            </div>
+
+            <div class="info-text">
+                The final SalesAI prediction system
+                uses Gradient Boosting Regression.
+                The model achieved an R² score of
+                94.96%, making it the strongest
+                performing model among the evaluated
+                algorithms.
+            </div>
+
+        </div>
+        """
+    )
+
+    st.markdown("")
+
+    st.html(
+        """
+        <div class="section-kicker">
+            MODEL COMPARISON
+        </div>
+
+        <div class="section-title">
+            Algorithm Performance
+        </div>
+        """
+    )
 
     comparison = pd.DataFrame({
+
         "Model": [
             "Gradient Boosting",
             "Random Forest",
             "Decision Tree",
             "Linear Regression"
         ],
+
         "MAE": [
             150.10,
             189.51,
             268.96,
             884.79
         ],
+
         "RMSE": [
             498.65,
             783.40,
             1241.98,
             1612.60
         ],
+
         "R²": [
             0.9496,
             0.8756,
             0.6874,
             0.4729
         ]
+
     })
 
     st.dataframe(
@@ -1380,37 +1624,196 @@ elif page == "🤖 About Model":
         hide_index=True
     )
 
-    st.subheader("⭐ Important Features")
+    st.markdown("")
 
-    feature_importance = pd.DataFrame({
-        "Feature": [
-            "QtyOrdered",
-            "Unit Price",
-            "Discount offered",
-            "Order Day",
-            "Region West",
-            "Freight Expenses",
-            "Order Year"
-        ],
-        "Importance": [
-            0.567236,
-            0.403263,
-            0.014899,
-            0.003250,
-            0.002119,
-            0.001536,
-            0.001186
-        ]
-    })
+    st.html(
+        """
+        <div class="section-kicker">
+            FEATURES
+        </div>
 
-    st.bar_chart(
-        feature_importance.set_index("Feature")
+        <div class="section-title">
+            Prediction Inputs
+        </div>
+        """
     )
 
-    st.info(
-        "Sales prediction is a regression problem. "
-        "Therefore MAE, RMSE and R² are used to evaluate the model "
-        "instead of classification accuracy."
+    features = [
+
+        "Unit Price",
+        "QtyOrdered",
+        "Discount offered",
+        "Freight Expenses",
+        "Order Year",
+        "Order Month",
+        "Order Quarter",
+        "Order Day",
+        "Order DayOfWeek",
+        "Order Priority",
+        "Freight Mode",
+        "Segment",
+        "Product Type",
+        "Product Sub-Category",
+        "Product Container",
+        "State",
+        "Region"
+
+    ]
+
+    feature_df = pd.DataFrame({
+        "Feature": features
+    })
+
+    st.dataframe(
+        feature_df,
+        use_container_width=True,
+        hide_index=True
+    )
+
+
+# =========================================================
+# SQL ANALYSIS
+# =========================================================
+
+elif page == "🗄️ SQL Analysis":
+
+    st.html(
+        """
+        <div class="section-kicker">
+            DATABASE ANALYTICS
+        </div>
+
+        <div class="section-title">
+            SQL Analysis
+        </div>
+
+        <p>
+            Explore sales data stored in SQLite.
+        </p>
+        """
+    )
+
+    db_candidates = [
+        "sales.db",
+        "sales_database.db",
+        "retail.db",
+        "sales_ai.db"
+    ]
+
+    db_file = None
+
+    for file in db_candidates:
+
+        if os.path.exists(file):
+
+            db_file = file
+            break
+
+    if db_file is None:
+
+        st.warning(
+            "SQLite database was not found in the "
+            "current project folder."
+        )
+
+        st.info(
+            "Upload your SQLite database file "
+            "to enable SQL Analysis."
+        )
+
+    else:
+
+        try:
+
+            conn = sqlite3.connect(
+                db_file
+            )
+
+            tables = pd.read_sql_query(
+                """
+                SELECT name
+                FROM sqlite_master
+                WHERE type='table'
+                """,
+                conn
+            )
+
+            if len(tables) > 0:
+
+                selected_table = st.selectbox(
+                    "Select Table",
+                    tables["name"].tolist()
+                )
+
+                query = f"""
+                SELECT *
+                FROM "{selected_table}"
+                LIMIT 100
+                """
+
+                result = pd.read_sql_query(
+                    query,
+                    conn
+                )
+
+                st.dataframe(
+                    result,
+                    use_container_width=True,
+                    hide_index=True
+                )
+
+                st.caption(
+                    f"Showing first 100 rows from "
+                    f"`{selected_table}`"
+                )
+
+            else:
+
+                st.warning(
+                    "No tables found in database."
+                )
+
+            conn.close()
+
+        except Exception as e:
+
+            st.error(
+                f"Database error: {e}"
+            )
+
+
+# =========================================================
+# POWER BI
+# =========================================================
+
+elif page == "📊 Power BI Dashboard":
+
+    st.html(
+        """
+        <div class="section-kicker">
+            BUSINESS INTELLIGENCE
+        </div>
+
+        <div class="section-title">
+            Power BI Dashboard
+        </div>
+
+        <p>
+            Interactive sales analytics dashboard.
+        </p>
+        """
+    )
+
+    powerbi_url = (
+        "https://app.powerbi.com/view?"
+        "r=eyJrIjoiNzUwZDI1NjYtZjQ2Zi00M2FmLWE1MDQtYjFlNWQ3ODAwZTUx"
+        "IiwidCI6IjcwMzY2YzAyLTkwOTUtNDMwOS04MDFhLTQ1MzUyOTUwYzg0MiJ9"
+    )
+
+    st.components.v1.iframe(
+        powerbi_url,
+        height=750,
+        scrolling=True
     )
 
 
@@ -1418,31 +1821,18 @@ elif page == "🤖 About Model":
 # FOOTER
 # =========================================================
 
-st.html(f"""
-<div style="
-    margin-top:45px;
-    padding:20px;
-    text-align:center;
-    border-top:1px solid {BORDER};
-    color:{MUTED};
-    font-size:13px;
-">
+st.html(
+    """
+    <div class="footer">
 
-    <div style="
-        font-size:17px;
-        font-weight:700;
-        color:{TEXT};
-    ">
-        📊 SalesAI
-    </div>
+        <strong>SalesAI</strong>
+        <br>
 
-    <div style="margin-top:6px;">
         Sales Prediction & Business Decision Support System
-    </div>
+        <br><br>
 
-    <div style="margin-top:5px;">
-        Built with Python • Streamlit • Machine Learning
-    </div>
+        Built with Python • Streamlit • Machine Learning • Power BI
 
-</div>
-""")
+    </div>
+    """
+)
