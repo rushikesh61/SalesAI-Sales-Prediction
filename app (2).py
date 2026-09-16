@@ -1646,6 +1646,9 @@ elif page == "🗄️ SQL Analysis":
 # ============================================================
 # POWER BI DASHBOARD
 # ============================================================
+# ============================================================
+# POWER BI DASHBOARD
+# ============================================================
 
 elif page == "📊 Power BI Dashboard":
 
@@ -1656,52 +1659,27 @@ elif page == "📊 Power BI Dashboard":
         </div>
 
         <div class="section-title">
-            Power BI Dashboard
+            Power BI Sales Dashboard
         </div>
 
         <div class="section-description">
-            Interactive Power BI dashboard for detailed sales analysis.
+            Interactive dashboard for detailed sales performance,
+            product, regional and business analysis.
         </div>
         """
     )
 
-    st.info(
-        "Paste your Power BI Publish-to-Web embed URL below."
+    powerbi_url = (
+        "https://app.powerbi.com/view?"
+        "r=eyJrIjoiNzUwZDI1NjYtZjQ2Zi00M2FmLWE1MDQtYjFlNWQ3ODAwZTUxIiwidCI6"
+        "IjcwMzY2YzAyLTkwOTUtNDMwOS04MDFhLTQ1MzUyOTUwYzg0MiJ9"
     )
 
-    powerbi_url = st.text_input(
-        "Power BI Dashboard URL",
-        placeholder="https://app.powerbi.com/view?r=..."
+    st.components.v1.iframe(
+        src=powerbi_url,
+        height=800,
+        scrolling=True
     )
-
-    if powerbi_url:
-
-        st.components.v1.iframe(
-            powerbi_url,
-            height=700,
-            scrolling=True
-        )
-
-    else:
-
-        st.html(
-            """
-            <div class="info-card">
-
-                <div class="info-icon">📊</div>
-
-                <div class="info-title">
-                    Power BI Dashboard
-                </div>
-
-                <div class="info-text">
-                    Add your Power BI Publish-to-Web link above
-                    to display the interactive dashboard here.
-                </div>
-
-            </div>
-            """
-        )
 
 
 # ============================================================
