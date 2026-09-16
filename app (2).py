@@ -1650,6 +1650,10 @@ elif page == "🗄️ SQL Analysis":
 # POWER BI DASHBOARD
 # ============================================================
 
+# ============================================================
+# POWER BI DASHBOARD
+# ============================================================
+
 elif page == "📊 Power BI Dashboard":
 
     st.html(
@@ -1671,17 +1675,19 @@ elif page == "📊 Power BI Dashboard":
 
     powerbi_url = (
         "https://app.powerbi.com/view?"
-        "r=eyJrIjoiNzUwZDI1NjYtZjQ2Zi00M2FmLWE1MDQtYjFlNWQ3ODAwZTUxIiwidCI6"
-        "IjcwMzY2YzAyLTkwOTUtNDMwOS04MDFhLTQ1MzUyOTUwYzg0MiJ9"
+        "r=eyJrIjoiNzUwZDI1NjYtZjQ2Zi00M2FmLWE1MDQtYjFlNWQ3ODAwZTUx"
+        "IiwidCI6IjcwMzY2YzAyLTkwOTUtNDMwOS04MDFhLTQ1MzUyOTUwYzg0MiJ9"
+        "&chromeless=true"
+        "&showAppBanner=false"
+        "&navContentPaneEnabled=false"
+        "&filterPaneEnabled=false"
     )
 
     st.components.v1.iframe(
         src=powerbi_url,
-        height=800,
-        scrolling=True
+        height=680,
+        scrolling=False
     )
-
-
 # ============================================================
 # FOOTER
 # ============================================================
