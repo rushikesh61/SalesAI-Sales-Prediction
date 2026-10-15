@@ -509,7 +509,6 @@ with st.sidebar:
             "🔮 Sales Prediction",
             "💡 Business Insights",
             "🤖 About Model",
-            "🗄️ SQL Analysis",
             "📊 Power BI Dashboard"
         ]
     )
